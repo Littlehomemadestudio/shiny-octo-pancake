@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Military Strategy Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+    <style>
+    
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+    color: #ffffff;
+    min-height: 100vh;
+}
+
+#game-container {
+    width: 100vw;
+    min-height: 100vh;
+    position: relative;
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 100vh;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+    padding: 2rem;
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* Loading screen */
+.loading-content {
+    text-align: center;
+    animation: fadeIn 1s ease-in;
+}
+
+.loading-logo i {
+    font-size: 4rem;
+    color: #00d4ff;
+    margin-bottom: 1rem;
+    animation: pulse 2s infinite;
+}
+
+.loading-logo h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 2.5rem;
+    font-weight: 900;
+    background: linear-gradient(45deg, #00d4ff, #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 2rem;
+}
+
+.loading-bar {
+    width: 300px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin: 2rem auto;
+    overflow: hidden;
+}
+
+.loading-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #00d4ff, #ff6b6b);
+    border-radius: 4px;
+    animation: loading 3s ease-in-out infinite;
+}
+
+/* Login screen */
+.login-container {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 3rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.login-header i {
+    font-size: 3rem;
+    color: #00d4ff;
+    margin-bottom: 1rem;
+}
+
+.login-header h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 2rem;
+    color: #ffffff;
+    margin-bottom: 2rem;
+}
+
+.login-form input {
+    width: 100%;
+    max-width: 300px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.login-form input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Country selection */
+.country-container {
+    max-width: 1200px;
+    width: 100%;
+}
+
+.country-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.country-header h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.country-header i {
+    color: #00d4ff;
+    margin-right: 0.5rem;
+}
+
+.countries-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.country-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.country-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+    border-color: #00d4ff;
+}
+
+.country-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.country-desc {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 1rem;
+}
+
+.country-bonus {
+    color: #00d4ff;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.country-income {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Game screen */
+#game-screen {
+    flex-direction: column;
+    padding: 0;
+}
+
+.game-header {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 80px;
+    width: 100%;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.player-name {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.player-country {
+    color: #00d4ff;
+    font-size: 0.9rem;
+}
+
+.resources {
+    display: flex;
+    gap: 2rem;
+}
+
+.resource {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: bold;
+}
+
+.resource i {
+    color: #00d4ff;
+}
+
+.game-main {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    min-height: calc(100vh - 80px);
+}
+
+.game-section {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.game-section.active {
+    display: flex;
+}
+
+/* Dashboard */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+    border-color: #00d4ff;
+}
+
+.dashboard-card i {
+    font-size: 3rem;
+    color: #00d4ff;
+    margin-bottom: 1rem;
+}
+
+.dashboard-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-card p {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Buttons */
+.btn-primary, .btn-secondary, .btn-back {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #00d4ff, #0099cc);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-back {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 5px;
+}
+
+/* Section headers */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-header h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 2rem;
+}
+
+.section-header h2 i {
+    color: #00d4ff;
+    margin-right: 0.5rem;
+}
+
+/* Military section */
+.military-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-card h4 {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.5rem;
+}
+
+.stat-card span {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #00d4ff;
+}
+
+.military-categories {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.category-btn {
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.category-btn.active,
+.category-btn:hover {
+    background: #00d4ff;
+    color: white;
+}
+
+.units-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.unit-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.unit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.unit-name {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.unit-cost {
+    color: #00d4ff;
+    font-weight: bold;
+}
+
+.unit-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.unit-ability {
+    color: #ff6b6b;
+    font-style: italic;
+    margin-bottom: 1rem;
+}
+
+.unit-requirements {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 1rem;
+}
+
+.unit-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.unit-actions button {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.buy-btn {
+    background: #00d4ff;
+    color: white;
+}
+
+.buy-btn:disabled {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.5);
+    cursor: not-allowed;
+}
+
+.info-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Economy section */
+.economy-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.income-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.income-source {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.income-source:last-child {
+    border-bottom: none;
+}
+
+.income-name {
+    font-weight: bold;
+}
+
+.income-amount {
+    color: #00d4ff;
+    font-weight: bold;
+}
+
+.economy-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+/* Battle section */
+.battle-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.battle-options {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+}
+
+.battle-log {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.battle-log h3 {
+    margin-bottom: 1rem;
+    color: #00d4ff;
+}
+
+.battle-entry {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border-left: 4px solid #00d4ff;
+}
+
+.battle-entry.victory {
+    border-left-color: #00ff88;
+}
+
+.battle-entry.defeat {
+    border-left-color: #ff6b6b;
+}
+
+/* Notifications */
+.notifications {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.notification {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    max-width: 300px;
+    animation: slideIn 0.3s ease;
+}
+
+.notification.success {
+    border-color: #00ff88;
+    background: rgba(0, 255, 136, 0.1);
+}
+
+.notification.error {
+    border-color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+}
+
+.notification.info {
+    border-color: #00d4ff;
+    background: rgba(0, 212, 255, 0.1);
+}
+
+/* Debug panel */
+.debug-panel {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    max-width: 300px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes loading {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="screen active">
+            <div class="loading-content">
+                <div class="loading-logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <h1>Military Strategy</h1>
+                </div>
+                <div class="loading-bar">
+                    <div class="loading-progress"></div>
+                </div>
+                <p>Initializing game systems...</p>
+            </div>
+        </div>
+
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen">
+            <div class="login-container">
+                <div class="login-header">
+                    <i class="fas fa-user-shield"></i>
+                    <h2>Commander Login</h2>
+                </div>
+                <div class="login-form">
+                    <input type="text" id="username" placeholder="Enter your commander name" maxlength="20">
+                    <button id="login-btn" class="btn-primary">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Enter Battlefield
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Country Selection Screen -->
+        <div id="country-screen" class="screen">
+            <div class="country-container">
+                <div class="country-header">
+                    <h2><i class="fas fa-globe"></i> Choose Your Nation</h2>
+                    <p>Select your country to begin your military campaign</p>
+                </div>
+                <div id="countries-grid" class="countries-grid">
+                    <!-- Countries will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Game Screen -->
+        <div id="game-screen" class="screen">
+            <!-- Header -->
+            <header class="game-header">
+                <div class="header-left">
+                    <div class="player-info">
+                        <span id="player-name" class="player-name">Loading...</span>
+                        <span id="player-country" class="player-country">No country selected</span>
+                    </div>
+                </div>
+                <div class="header-center">
+                    <div class="resources">
+                        <div class="resource">
+                            <i class="fas fa-coins"></i>
+                            <span id="money-display">$0</span>
+                        </div>
+                        <div class="resource">
+                            <i class="fas fa-star"></i>
+                            <span id="level-display">Level 1</span>
+                        </div>
+                        <div class="resource">
+                            <i class="fas fa-bolt"></i>
+                            <span id="power-display">Power: 0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button id="shop-btn" class="btn-primary">
+                        <i class="fas fa-store"></i>
+                        Shop
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="game-main">
+                <!-- Dashboard -->
+                <div id="dashboard" class="game-section active">
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card" data-section="military">
+                            <i class="fas fa-tank"></i>
+                            <h3>Military</h3>
+                            <p>Manage your armed forces</p>
+                        </div>
+                        <div class="dashboard-card" data-section="economy">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>Economy</h3>
+                            <p>Collect income & manage resources</p>
+                        </div>
+                        <div class="dashboard-card" data-section="map">
+                            <i class="fas fa-crosshairs"></i>
+                            <h3>Battle</h3>
+                            <p>Engage in combat</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Military Section -->
+                <div id="military" class="game-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-tank"></i> Military Forces</h2>
+                        <button class="btn-back" data-back="dashboard">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    </div>
+                    <div class="military-content">
+                        <div class="military-stats">
+                            <div class="stat-card">
+                                <h4>Total Power</h4>
+                                <span id="total-power">0</span>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Total Units</h4>
+                                <span id="total-units">0</span>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Battles Won</h4>
+                                <span id="battles-won">0</span>
+                            </div>
+                        </div>
+                        <div class="military-categories">
+                            <button class="category-btn active" data-category="infantry">Infantry</button>
+                            <button class="category-btn" data-category="armor">Armor</button>
+                            <button class="category-btn" data-category="air">Air Force</button>
+                        </div>
+                        <div id="military-units" class="units-grid">
+                            <!-- Units will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Economy Section -->
+                <div id="economy" class="game-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-line"></i> Economy</h2>
+                        <button class="btn-back" data-back="dashboard">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    </div>
+                    <div class="economy-content">
+                        <div class="income-card">
+                            <h3>Income Sources</h3>
+                            <div id="income-sources">
+                                <!-- Income sources will be populated -->
+                            </div>
+                            <button id="collect-income-btn" class="btn-primary">
+                                <i class="fas fa-hand-holding-usd"></i>
+                                Collect Income
+                            </button>
+                        </div>
+                        <div class="economy-stats">
+                            <div class="stat-card">
+                                <h4>Next Income</h4>
+                                <span id="next-income-time">Ready</span>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Daily Purchases</h4>
+                                <span id="daily-purchases">0/50</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Section -->
+<div id="map" class="game-section">
+  <div class="section-header">
+    <h2><i class="fas fa-map"></i> World Map</h2>
+    <button class="btn-back" data-back="dashboard">
+      <i class="fas fa-arrow-left"></i> Back
+    </button>
+  </div>
+  <div class="map-info" id="map-info">Select a country.</div>
+  <div class="map-controls">
+    <button id="place-cp-btn" class="btn-primary" disabled>
+      <i class="fas fa-flag"></i> Place Base
+    </button>
+    <button id="attack-btn" class="btn-secondary" disabled>
+      <i class="fas fa-fist-raised"></i> Attack & Expand
+    </button>
+  </div>
+  <div class="map-wrapper">
+    <div id="leaflet-map" class="leaflet-map"></div>
+  </div>
+</div>
+
+
+        <!-- Debug Panel -->
+        <div id="debug-panel" class="debug-panel" style="display: none;">
+            <strong>Debug Info:</strong><br>
+            Screen: <span id="debug-screen">-</span><br>
+            Section: <span id="debug-section">-</span><br>
+            Player: <span id="debug-player">-</span><br>
+            Country: <span id="debug-country">-</span><br>
+            <button onclick="toggleDebug()" style="margin-top: 0.5rem; padding: 0.25rem 0.5rem; font-size: 0.7rem;">Hide</button>
+        </div>
+
+        <!-- Notification system -->
+        <div id="notifications" class="notifications"></div>
+    </div>
+
+    <script>
+// Game data and configuration
+const GAME_DATA = {
+    countries: {
+        usa: {
+            name: "🇺🇸 United States",
+            description: "Superior military and economic power worldwide",
+            starting_money: 800000,
+            income_methods: {
+                military_exports: { name: "Military Exports", base_income: 180000, multiplier: 1.5 },
+                technology_sales: { name: "Technology Sales", base_income: 120000, multiplier: 2.0 },
+                alliance_support: { name: "Alliance Support", base_income: 80000, multiplier: 1.3 }
+            },
+            bonus: "Military Power +20%"
+        },
+        russia: {
+            name: "🇷🇺 Russia",
+            description: "Traditional military power with abundant natural resources",
+            starting_money: 650000,
+            income_methods: {
+                resource_exports: { name: "Resource Exports", base_income: 220000, multiplier: 1.4 },
+                nuclear_technology: { name: "Nuclear Technology", base_income: 150000, multiplier: 1.8 },
+                military_cooperation: { name: "Military Cooperation", base_income: 95000, multiplier: 1.2 }
+            },
+            bonus: "Nuclear Technology +15%"
+        },
+        china: {
+            name: "🇨🇳 China",
+            description: "Growing economy with massive manufacturing capabilities",
+            starting_money: 720000,
+            income_methods: {
+                manufacturing: { name: "Mass Manufacturing", base_income: 250000, multiplier: 1.6 },
+                trade_routes: { name: "Trade Routes", base_income: 140000, multiplier: 1.7 },
+                infrastructure: { name: "Infrastructure", base_income: 110000, multiplier: 1.4 }
+            },
+            bonus: "Manufacturing +25%"
+        }
+    },
+
+    military_assets: {
+        // Infantry
+        militia: { 
+            cost: 15000, 
+            power: 1, 
+            name: "Militia", 
+            ability: "Basic infantry forces", 
+            tech_required: null, 
+            country_restricted: null 
+        },
+        infantry: { 
+            cost: 25000, 
+            power: 2, 
+            name: "Regular Infantry", 
+            ability: "Standard military forces", 
+            tech_required: null, 
+            country_restricted: null 
+        },
+        marines: { 
+            cost: 60000, 
+            power: 4, 
+            name: "Marines", 
+            ability: "Elite amphibious forces", 
+            tech_required: null, 
+            country_restricted: null 
+        },
+        special_forces: { 
+            cost: 150000, 
+            power: 8, 
+            name: "Special Forces", 
+            ability: "Elite special operations", 
+            tech_required: null, 
+            country_restricted: null 
+        },
+
+        // Armor
+        armored_car: { 
+            cost: 80000, 
+            power: 5, 
+            name: "Armored Car", 
+            ability: "Fast reconnaissance", 
+            tech_required: null, 
+            country_restricted: null 
+        },
+        tank: { 
+            cost: 200000, 
+            power: 10, 
+            name: "Main Battle Tank", 
+            ability: "Heavy armor and firepower", 
+            tech_required: null, 
+            country_restricted: null 
+        },
+        advanced_tank: { 
+            cost: 500000, 
+            power: 20, 
+            name: "Advanced Tank", 
+            ability: "Modern warfare platform", 
+            tech_required: null, 
+            country_restricted: null 
+        },
+
+        // Air Force
+        helicopter: { 
+            cost: 300000, 
+            power: 12, 
+            name: "Attack Helicopter", 
+            ability: "Air support and reconnaissance", 
+            tech_required: null, 
+            country_restricted: null 
+        },
+        fighter_jet: { 
+            cost: 800000, 
+            power: 25, 
+            name: "Fighter Jet", 
+            ability: "Air superiority fighter", 
+            tech_required: null, 
+            country_restricted: null 
+        },
+        stealth_bomber: { 
+            cost: 2000000, 
+            power: 50, 
+            name: "Stealth Bomber", 
+            ability: "Strategic bombing capability", 
+            tech_required: null, 
+            country_restricted: null 
+        }
+    }
+};
+
+// Game state
+let gameState = {
+    player: null,
+    currentScreen: 'loading',
+    selectedCountry: null,
+    dailyPurchaseLimit: 50,
+    incomeCooldown: 3600,
+    debugMode: false
+};
+
+// Debug functions
+function toggleDebug() {
+    gameState.debugMode = !gameState.debugMode;
+    const panel = document.getElementById('debug-panel');
+    if (panel) {
+        panel.style.display = gameState.debugMode ? 'block' : 'none';
+    }
+    if (gameState.debugMode) updateDebugInfo();
+}
+
+function updateDebugInfo() {
+    if (!gameState.debugMode) return;
+    
+    const screenEl = document.getElementById('debug-screen');
+    const sectionEl = document.getElementById('debug-section');
+    const playerEl = document.getElementById('debug-player');
+    const countryEl = document.getElementById('debug-country');
+    
+    if (screenEl) screenEl.textContent = gameState.currentScreen;
+    if (sectionEl) {
+        const activeSection = document.querySelector('.game-section.active');
+        sectionEl.textContent = activeSection ? activeSection.id : 'none';
+    }
+    if (playerEl) playerEl.textContent = gameState.player ? gameState.player.name : 'null';
+    if (countryEl) countryEl.textContent = gameState.player?.country || 'none';
+}
+
+// Initialize game
+class MilitaryGame {
+    constructor() {
+        console.log('Initializing Military Game...');
+        this.initializeGame();
+        this.setupEventListeners();
+        this.loadGameData();
+    }
+
+    initializeGame() {
+        console.log('Starting initialization...');
+        this.showScreen('loading');
+        setTimeout(() => {
+            console.log('Moving to login screen...');
+            this.showScreen('login');
+        }, 1500);
+    }
+
+    setupEventListeners() {
+        console.log('Setting up event listeners...');
+        
+        // Single click handler for all events
+        document.addEventListener('click', (e) => {
+            console.log('Click detected on:', e.target);
+            
+            // Login button
+            if (e.target.id === 'login-btn' || e.target.closest('#login-btn')) {
+                console.log('Login button clicked');
+                this.handleLogin();
+                return;
+            }
+            
+            // Dashboard navigation
+            const dashboardCard = e.target.closest('.dashboard-card');
+            if (dashboardCard && dashboardCard.dataset.section) {
+                console.log('Dashboard card clicked:', dashboardCard.dataset.section);
+                this.showGameSection(dashboardCard.dataset.section);
+                return;
+            }
+
+            // Back buttons
+            const backBtn = e.target.closest('.btn-back');
+            if (backBtn && backBtn.dataset.back) {
+                console.log('Back button clicked:', backBtn.dataset.back);
+                this.showGameSection(backBtn.dataset.back);
+                return;
+            }
+
+            // Country selection
+            const countryCard = e.target.closest('.country-card');
+            if (countryCard && countryCard.dataset.country) {
+                console.log('Country card clicked:', countryCard.dataset.country);
+                this.selectCountry(countryCard.dataset.country);
+                return;
+            }
+
+            // Military category buttons
+            if (e.target.classList.contains('category-btn')) {
+                console.log('Category button clicked:', e.target.dataset.category);
+                this.showMilitaryCategory(e.target.dataset.category);
+                return;
+            }
+
+            // Buy buttons
+            if (e.target.classList.contains('buy-btn')) {
+                console.log('Buy button clicked:', e.target.dataset.unit);
+                this.buyUnit(e.target.dataset.unit);
+                return;
+            }
+
+            // Income collection
+            if (e.target.id === 'collect-income-btn' || e.target.closest('#collect-income-btn')) {
+                console.log('Collect income clicked');
+                this.collectIncome();
+                return;
+            }
+
+            // Battle
+            if (e.target.id === 'ai-battle-btn' || e.target.closest('#ai-battle-btn')) {
+                console.log('AI battle clicked');
+                this.startAIBattle();
+                return;
+            }
+
+            // Shop button
+            if (e.target.id === 'shop-btn' || e.target.closest('#shop-btn')) {
+                console.log('Shop button clicked');
+                this.showGameSection('military');
+                return;
+            }
+        });
+
+        // Enter key for username
+        const usernameInput = document.getElementById('username');
+        if (usernameInput) {
+            usernameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.handleLogin();
+                }
+            });
+        }
+
+        // Debug key combination (Ctrl+D)
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                toggleDebug();
+            }
+        });
+    }
+
+    handleLogin() {
+        const usernameInput = document.getElementById('username');
+        const username = (usernameInput?.value || '').trim();
+        
+        console.log('Login attempt with username:', username);
+        
+        if (username.length < 2) {
+            this.showNotification('Please enter a valid username (at least 2 characters)', 'error');
+            return;
+        }
+
+        // Initialize player data
+        gameState.player = {
+            name: username,
+            country: null,
+            country_selected: false,
+            points: 0,
+            experience: 0,
+            level: 1,
+            military: {},
+            technologies: [],
+            battles_won: 0,
+            battles_lost: 0,
+            daily_purchases: 0,
+            total_messages: 0,
+            last_income_time: 0,
+            income_cooldown: 3600
+        };
+
+        console.log('Player created:', gameState.player);
+        
+        this.showScreen('country');
+        this.populateCountries();
+        this.showNotification(`Welcome, Commander ${username}!`, 'success');
+    }
+
+    populateCountries() {
+        console.log('Populating countries...');
+        const grid = document.getElementById('countries-grid');
+        if (!grid) {
+            console.error('Countries grid not found!');
+            return;
+        }
+        
+        grid.innerHTML = '';
+
+        Object.entries(GAME_DATA.countries).forEach(([code, country]) => {
+            const card = document.createElement('div');
+            card.className = 'country-card';
+            card.dataset.country = code;
+            card.innerHTML = `
+                <div class="country-name">${country.name}</div>
+                <div class="country-desc">${country.description}</div>
+                <div class="country-bonus">${country.bonus}</div>
+                <div class="country-income">
+                    <strong>Starting Money:</strong> ${country.starting_money.toLocaleString()}<br>
+                    <strong>Income Sources:</strong><br>
+                    ${Object.values(country.income_methods).map(m => `• ${m.name}: ${m.base_income.toLocaleString()}`).join('<br>')}
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+        
+        console.log('Countries populated successfully');
+    }
+
+    selectCountry(countryCode) {
+        console.log('Selecting country:', countryCode);
+        
+        const country = GAME_DATA.countries[countryCode];
+        if (!country) {
+            console.error('Invalid country code:', countryCode);
+            return;
+        }
+
+        // Update player data
+        gameState.player.country = countryCode;
+        gameState.player.country_selected = true;
+        gameState.player.points = country.starting_money;
+
+        console.log('Country selected, player updated:', gameState.player);
+
+        // Transition to game
+        this.showScreen('game');
+        this.showGameSection('dashboard');
+        this.updateGameDisplay();
+        this.showNotification(`Welcome to ${country.name}!`, 'success');
+        this.saveGameData();
+    }
+
+    showScreen(screenName) {
+        console.log('Showing screen:', screenName);
+        
+        // Hide all screens
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+        
+        // Show target screen
+        const targetScreen = document.getElementById(`${screenName}-screen`);
+        if (targetScreen) {
+            targetScreen.classList.add('active');
+            gameState.currentScreen = screenName;
+            console.log('Screen shown successfully:', screenName);
+        } else {
+            console.error('Screen not found:', screenName);
+        }
+        
+        updateDebugInfo();
+    }
+
+    showGameSection(sectionName) {
+        console.log('Showing game section:', sectionName);
+        
+        // Hide all sections
+        document.querySelectorAll('.game-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Show target section
+        const targetSection = document.getElementById(sectionName);
+        if (targetSection) {
+            targetSection.classList.add('active');
+            console.log('Game section shown successfully:', sectionName);
+            
+            // Load section-specific content
+            switch (sectionName) {
+                case 'military': 
+                    this.loadMilitarySection(); 
+                    break;
+                case 'economy': 
+                    this.loadEconomySection(); 
+                    break;
+                case 'battle':
+                    // Battle section is static, no loading needed
+                    break;
+                default:
+                    console.log('No specific loader for section:', sectionName);
+                    break;
+            }
+        } else {
+            console.error('Game section not found:', sectionName);
+        }
+        
+        updateDebugInfo();
+    }
+
+    updateGameDisplay() {
+        console.log('Updating game display...');
+        
+        const player = gameState.player;
+        if (!player) {
+            console.error('No player data to display');
+            return;
+        }
+
+        // Update header elements
+        const elements = {
+            'player-name': player.name,
+            'player-country': player.country ? GAME_DATA.countries[player.country].name : 'No country',
+            'money-display': `${player.points.toLocaleString()}`,
+            'level-display': `Level ${player.level}`,
+            'power-display': `Power: ${this.calculateTotalPower()}`
+        };
+
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            } else {
+                console.warn(`Element not found: ${id}`);
+            }
+        });
+        
+        console.log('Game display updated');
+    }
+
+    calculateTotalPower() {
+        const player = gameState.player;
+        if (!player || !player.military) return 0;
+
+        let totalPower = 0;
+        Object.entries(player.military).forEach(([unitId, count]) => {
+            const unit = GAME_DATA.military_assets[unitId];
+            if (unit && count > 0) {
+                totalPower += unit.power * count;
+            }
+        });
+        
+        const levelBonus = 1 + (player.level * 0.03);
+        return Math.floor(totalPower * levelBonus);
+    }
+
+    // Military section
+    loadMilitarySection() {
+        console.log('Loading military section...');
+        this.updateMilitaryStats();
+        this.showMilitaryCategory('infantry');
+    }
+
+    updateMilitaryStats() {
+        const totalPower = this.calculateTotalPower();
+        const totalUnits = Object.values(gameState.player.military).reduce((a, b) => a + b, 0);
+
+        const updates = {
+            'total-power': totalPower.toLocaleString(),
+            'total-units': totalUnits.toLocaleString(),
+            'battles-won': gameState.player.battles_won.toString()
+        };
+
+        Object.entries(updates).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        });
+    }
+
+    showMilitaryCategory(category) {
+        console.log('Showing military category:', category);
+        
+        // Update active button
+        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.querySelector(`[data-category="${category}"]`);
+        if (activeBtn) activeBtn.classList.add('active');
+
+        // Get and display units
+        const units = this.getUnitsByCategory(category);
+        this.displayUnits(units);
+    }
+
+    getUnitsByCategory(category) {
+        const categoryMap = {
+            infantry: ['militia', 'infantry', 'marines', 'special_forces'],
+            armor: ['armored_car', 'tank', 'advanced_tank'],
+            air: ['helicopter', 'fighter_jet', 'stealth_bomber']
+        };
+        
+        const unitIds = categoryMap[category] || [];
+        return unitIds.map(id => ({
+            id,
+            ...GAME_DATA.military_assets[id]
+        })).filter(unit => unit.name);
+    }
+
+    displayUnits(units) {
+        console.log('Displaying units:', units.length);
+        
+        const grid = document.getElementById('military-units');
+        if (!grid) {
+            console.error('Military units grid not found!');
+            return;
+        }
+        
+        grid.innerHTML = '';
+
+        units.forEach(unit => {
+            const owned = gameState.player.military[unit.id] || 0;
+            const affordable = gameState.player.points >= unit.cost;
+            const canAfford = affordable && gameState.player.daily_purchases < gameState.dailyPurchaseLimit;
+
+            const card = document.createElement('div');
+            card.className = 'unit-card';
+            card.innerHTML = `
+                <div class="unit-header">
+                    <div class="unit-name">${unit.name}</div>
+                    <div class="unit-cost">${unit.cost.toLocaleString()}</div>
+                </div>
+                <div class="unit-stats">
+                    <span>Power: ${unit.power}</span>
+                    <span>Owned: ${owned}</span>
+                </div>
+                <div class="unit-ability">${unit.ability}</div>
+                <div class="unit-actions">
+                    <button class="buy-btn" data-unit="${unit.id}" ${!canAfford ? 'disabled' : ''}>
+                        Buy (1 unit)
+                    </button>
+                    <button class="info-btn">Info</button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+        
+        console.log('Units displayed successfully');
+    }
+
+    buyUnit(unitId) {
+        console.log('Attempting to buy unit:', unitId);
+        
+        const unit = GAME_DATA.military_assets[unitId];
+        if (!unit) {
+            console.error('Unit not found:', unitId);
+            return;
+        }
+
+        // Check if player can afford it
+        if (gameState.player.points < unit.cost) {
+            this.showNotification('Insufficient funds!', 'error');
+            return;
+        }
+
+        // Check daily purchase limit
+        if (gameState.player.daily_purchases >= gameState.dailyPurchaseLimit) {
+            this.showNotification('Daily purchase limit reached!', 'error');
+            return;
+        }
+
+        // Process purchase
+        gameState.player.points -= unit.cost;
+        gameState.player.military[unitId] = (gameState.player.military[unitId] || 0) + 1;
+        gameState.player.daily_purchases += 1;
+        gameState.player.experience += Math.floor(unit.cost / 100);
+
+        console.log('Purchase successful:', unit.name);
+        
+        // Update displays
+        this.updateGameDisplay();
+        this.loadMilitarySection();
+        this.showNotification(`Purchased: ${unit.name}`, 'success');
+        this.saveGameData();
+    }
+
+    // Economy section
+    loadEconomySection() {
+        console.log('Loading economy section...');
+        this.updateIncomeDisplay();
+        this.updateEconomyStats();
+    }
+
+    updateIncomeDisplay() {
+        const player = gameState.player;
+        if (!player?.country) return;
+
+        const sourcesDiv = document.getElementById('income-sources');
+        if (!sourcesDiv) return;
+        
+        sourcesDiv.innerHTML = '';
+
+        const country = GAME_DATA.countries[player.country];
+        Object.values(country.income_methods).forEach(method => {
+            const levelBonus = 1 + (player.level * 0.02);
+            const income = Math.floor(method.base_income * method.multiplier * levelBonus);
+
+            const row = document.createElement('div');
+            row.className = 'income-source';
+            row.innerHTML = `
+                <div class="income-name">${method.name}</div>
+                <div class="income-amount">${income.toLocaleString()}</div>
+            `;
+            sourcesDiv.appendChild(row);
+        });
+    }
+
+    updateEconomyStats() {
+        const now = Math.floor(Date.now() / 1000);
+        const lastIncome = gameState.player.last_income_time || 0;
+        const cooldown = gameState.player.income_cooldown || 3600;
+        
+        const nextIncomeEl = document.getElementById('next-income-time');
+        if (nextIncomeEl) {
+            if (now - lastIncome < cooldown) {
+                const remaining = cooldown - (now - lastIncome);
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+                nextIncomeEl.textContent = `${minutes}m ${seconds}s`;
+            } else {
+                nextIncomeEl.textContent = 'Ready!';
+            }
+        }
+        
+        const dailyPurchasesEl = document.getElementById('daily-purchases');
+        if (dailyPurchasesEl) {
+            dailyPurchasesEl.textContent = `${gameState.player.daily_purchases}/${gameState.dailyPurchaseLimit}`;
+        }
+    }
+
+    collectIncome() {
+        console.log('Collecting income...');
+        
+        if (!gameState.player?.country) {
+            this.showNotification('Please select a country first!', 'error');
+            return;
+        }
+
+        const now = Math.floor(Date.now() / 1000);
+        const lastIncome = gameState.player.last_income_time || 0;
+        const cooldown = gameState.player.income_cooldown || 3600;
+        
+        if (now - lastIncome < cooldown) {
+            const remaining = cooldown - (now - lastIncome);
+            const minutes = Math.floor(remaining / 60);
+            const seconds = remaining % 60;
+            this.showNotification(`Wait ${minutes} minutes and ${seconds} seconds!`, 'error');
+            return;
+        }
+
+        const country = GAME_DATA.countries[gameState.player.country];
+        let totalIncome = 0;
+        
+        Object.values(country.income_methods).forEach(method => {
+            const levelBonus = 1 + (gameState.player.level * 0.02);
+            totalIncome += Math.floor(method.base_income * method.multiplier * levelBonus);
+        });
+
+        gameState.player.points += totalIncome;
+        gameState.player.last_income_time = now;
+        gameState.player.experience += Math.floor(totalIncome / 20);
+
+        this.updateGameDisplay();
+        this.updateEconomyStats();
+        this.showNotification(`Income collected: ${totalIncome.toLocaleString()}`, 'success');
+        this.saveGameData();
+        
+        console.log('Income collected:', totalIncome);
+    }
+
+    // Battle system
+    startAIBattle() {
+        console.log('Starting AI battle...');
+        
+        const playerPower = this.calculateTotalPower();
+        if (playerPower === 0) {
+            this.showNotification('Build military forces before battle!', 'error');
+            return;
+        }
+
+        const aiPower = Math.floor(playerPower * (0.6 + Math.random() * 0.8));
+        const playerAttack = playerPower * (0.7 + Math.random() * 0.6);
+        const aiDefense = aiPower * (0.7 + Math.random() * 0.6);
+
+        let result, message;
+        if (playerAttack > aiDefense) {
+            const reward = Math.floor(aiPower * 100);
+            gameState.player.points += reward;
+            gameState.player.battles_won += 1;
+            gameState.player.experience += Math.floor(reward / 10);
+            result = 'victory';
+            message = `Victory! Earned ${reward.toLocaleString()}`;
+        } else {
+            const loss = Math.floor(gameState.player.points * 0.1);
+            gameState.player.points = Math.max(0, gameState.player.points - loss);
+            gameState.player.battles_lost += 1;
+            result = 'defeat';
+            message = `Defeat! Lost ${loss.toLocaleString()}`;
+        }
+
+        this.updateGameDisplay();
+        this.updateMilitaryStats();
+        this.showNotification(message, result === 'victory' ? 'success' : 'error');
+        this.saveGameData();
+
+        // Add to battle history
+        const historyDiv = document.getElementById('battle-history');
+        if (historyDiv) {
+            const entry = document.createElement('div');
+            entry.className = `battle-entry ${result}`;
+            entry.textContent = `${result === 'victory' ? 'Victory' : 'Defeat'} | Your Power: ${Math.floor(playerAttack)} | Enemy: ${Math.floor(aiDefense)}`;
+            
+            // Remove placeholder text if it exists
+            const placeholder = historyDiv.querySelector('p');
+            if (placeholder) placeholder.remove();
+            
+            historyDiv.prepend(entry);
+        }
+        
+        console.log('Battle completed:', result);
+    }
+
+    // Utility methods
+    showNotification(message, type = 'info') {
+        console.log('Showing notification:', message, type);
+        
+        const container = document.getElementById('notifications');
+        if (!container) {
+            console.error('Notifications container not found!');
+            return;
+        }
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        container.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    // Data persistence (using variables instead of localStorage for debugging)
+    loadGameData() {
+        console.log('Loading game data...');
+        // For now, skip loading saved data to ensure fresh start
+        // This helps debug the initialization process
+    }
+
+    saveGameData() {
+        console.log('Saving game data...');
+        // Store in window for debugging
+        window.gameData = {
+            player: gameState.player,
+            timestamp: Date.now()
+        };
+        console.log('Game data saved to window.gameData');
+    }
+}
+
+// Initialize game when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing game...');
+    window.game = new MilitaryGame();
+    
+    // Show debug panel by default for troubleshooting
+    setTimeout(() => {
+        const debugPanel = document.getElementById('debug-panel');
+        if (debugPanel) {
+            debugPanel.style.display = 'block';
+            gameState.debugMode = true;
+            updateDebugInfo();
+        }
+    }, 2000);
+});
+
+// Update economy stats periodically
+setInterval(() => {
+    if (window.game && gameState.player && gameState.currentScreen === 'game') {
+        const currentSection = document.querySelector('.game-section.active');
+        if (currentSection && currentSection.id === 'economy') {
+            window.game.updateEconomyStats();
+        }
+    }
+    updateDebugInfo();
+}, 1000);
+    </script>
+</body>
+</html> 
