@@ -13,6 +13,8 @@ import random
 import re
 import numpy as np
 from typing import Dict, List, Tuple, Optional
+import pygame
+import winsound
 
 class QuranApp:
     def __init__(self, root):
@@ -22,20 +24,15 @@ class QuranApp:
         self.root.configure(bg='#2a2a2a')
         self.root.minsize(1200, 800)
         
-        # Modern color scheme with gray background
-        self.colors = {
-            'primary': '#16213e',
-            'secondary': '#0f3460', 
-            'accent': '#e94560',
-            'success': '#4caf50',
-            'warning': '#ff9800',
-            'background': '#2a2a2a',  # Gray background
-            'surface': '#3a3a3a',     # Lighter gray for surfaces
-            'text': '#ffffff',
-            'text_secondary': '#b0b0b0',
-            'arabic_text': '#2d5a27',
-            'arabic_bg': '#f8f9fa'
-        }
+        # Initialize sound system
+        try:
+            pygame.mixer.init()
+            self.sound_enabled = True
+        except:
+            self.sound_enabled = False
+        
+        # Dynamic color scheme based on current background
+        self.update_color_scheme()
         
         # Initialize database
         self.init_database()
@@ -52,6 +49,35 @@ class QuranApp:
         self.bookmarks = self.user_data.get('bookmarks', [])
         self.notes = self.user_data.get('notes', {})
         self.achievements = self.user_data.get('achievements', [])
+        
+        # Customization system
+        self.available_backgrounds = {
+            'default': {'name': 'Default', 'cost': 0, 'color': '#2a2a2a'},
+            'ocean': {'name': 'Ocean Blue', 'cost': 100, 'color': '#1e3a8a'},
+            'forest': {'name': 'Forest Green', 'cost': 150, 'color': '#166534'},
+            'sunset': {'name': 'Sunset Orange', 'cost': 200, 'color': '#ea580c'},
+            'purple': {'name': 'Royal Purple', 'cost': 250, 'color': '#7c3aed'},
+            'gold': {'name': 'Golden', 'cost': 500, 'color': '#f59e0b'},
+            'space': {'name': 'Space Theme', 'cost': 750, 'color': '#1f2937'},
+            'rainbow': {'name': 'Rainbow', 'cost': 1000, 'color': '#ec4899'}
+        }
+        self.unlocked_backgrounds = self.user_data.get('unlocked_backgrounds', ['default'])
+        self.current_background = self.user_data.get('current_background', 'default')
+        
+        # Enhanced achievement system
+        self.achievement_definitions = {
+            'first_page': {'name': 'First Steps', 'description': 'Read your first page', 'points': 50, 'icon': '🌟'},
+            'week_streak': {'name': 'Consistent Reader', 'description': '7 day reading streak', 'points': 100, 'icon': '🔥'},
+            'month_streak': {'name': 'Dedicated Scholar', 'description': '30 day reading streak', 'points': 500, 'icon': '🏆'},
+            'points_1000': {'name': 'Point Collector', 'description': 'Earn 1000 points', 'points': 200, 'icon': '⭐'},
+            'points_5000': {'name': 'Point Master', 'description': 'Earn 5000 points', 'points': 500, 'icon': '💎'},
+            'reading_hour': {'name': 'Hour of Wisdom', 'description': 'Read for 1 hour', 'points': 150, 'icon': '📚'},
+            'reading_day': {'name': 'Day of Learning', 'description': 'Read for 8 hours', 'points': 1000, 'icon': '📖'},
+            'page_100': {'name': 'Century Reader', 'description': 'Read 100 pages', 'points': 300, 'icon': '💯'},
+            'page_500': {'name': 'Half Quran', 'description': 'Read 500 pages', 'points': 1000, 'icon': '📜'},
+            'complete_quran': {'name': 'Quran Master', 'description': 'Complete the entire Quran', 'points': 5000, 'icon': '👑'}
+        }
+        self.recent_achievements = []
         
         # Timer and reading tracking
         self.reading_time = 0
@@ -117,6 +143,9 @@ class QuranApp:
         # Load initial content
         self.load_current_content()
         
+        # Apply current background
+        self.apply_background()
+        
     def init_database(self):
         """Initialize SQLite database for Quran data and user progress"""
         self.conn = sqlite3.connect('quran_app.db')
@@ -180,14 +209,14 @@ class QuranApp:
         self.setup_styles()
         
         # Create main container
-        main_container = tk.Frame(self.root, bg=self.colors['background'])
-        main_container.pack(fill='both', expand=True)
+        self.main_container = tk.Frame(self.root, bg=self.colors['background'])
+        self.main_container.pack(fill='both', expand=True)
         
         # Create header with modern design
-        self.create_header(main_container)
+        self.create_header(self.main_container)
         
         # Create main content area with sidebar
-        content_container = tk.Frame(main_container, bg=self.colors['background'])
+        content_container = tk.Frame(self.main_container, bg=self.colors['background'])
         content_container.pack(fill='both', expand=True, padx=10, pady=5)
         
         # Left sidebar
@@ -200,7 +229,7 @@ class QuranApp:
         self.create_right_panel(content_container)
         
         # Status bar
-        self.create_status_bar(main_container)
+        self.create_status_bar(self.main_container)
 
     def setup_styles(self):
         """Configure modern ttk styles"""
@@ -308,7 +337,19 @@ class QuranApp:
         controls_frame = tk.Frame(header, bg=self.colors['primary'])
         controls_frame.pack(side='right', padx=10, pady=20)
         
-        leaderboard_btn = tk.Button(controls_frame, text="🏆", font=('Segoe UI', 14),
+        achievements_btn = tk.Button(controls_frame, text="🏆", font=('Segoe UI', 14),
+                                    bg=self.colors['primary'], fg=self.colors['text'],
+                                    relief='flat', command=self.show_achievements_window,
+                                    width=3, height=1)
+        achievements_btn.pack(side='right', padx=5)
+        
+        shop_btn = tk.Button(controls_frame, text="🎨", font=('Segoe UI', 14),
+                            bg=self.colors['primary'], fg=self.colors['text'],
+                            relief='flat', command=self.open_customization_shop,
+                            width=3, height=1)
+        shop_btn.pack(side='right', padx=5)
+        
+        leaderboard_btn = tk.Button(controls_frame, text="📊", font=('Segoe UI', 14),
                                    bg=self.colors['primary'], fg=self.colors['text'],
                                    relief='flat', command=self.show_leaderboard,
                                    width=3, height=1)
@@ -440,19 +481,14 @@ class QuranApp:
         content_frame = tk.Frame(reading_frame, bg=self.colors['surface'], relief='raised', bd=2)
         content_frame.pack(fill='both', expand=True, pady=(0, 10))
         
-        # Header with surah info
-        header_frame = tk.Frame(content_frame, bg=self.colors['primary'])
-        header_frame.pack(fill='x', padx=10, pady=10)
+        # Achievement display at top middle
+        achievement_frame = tk.Frame(content_frame, bg=self.colors['primary'])
+        achievement_frame.pack(fill='x', padx=10, pady=10)
         
-        self.surah_title = tk.Label(header_frame, text="Surah Al-Fatiha", 
-                                   font=('Segoe UI', 18, 'bold'),
-                                   bg=self.colors['primary'], fg=self.colors['text'])
-        self.surah_title.pack(side='left')
-        
-        self.ayah_info = tk.Label(header_frame, text="Ayah 1 of 7", 
-                                 font=('Segoe UI', 12),
-                                 bg=self.colors['primary'], fg=self.colors['text_secondary'])
-        self.ayah_info.pack(side='right')
+        self.achievement_display = tk.Label(achievement_frame, text="", 
+                                          font=('Segoe UI', 14, 'bold'),
+                                          bg=self.colors['primary'], fg=self.colors['accent'])
+        self.achievement_display.pack(expand=True)
         
         # Quran page image display
         self.page_frame = tk.Frame(content_frame, bg=self.colors['arabic_bg'])
@@ -569,18 +605,14 @@ class QuranApp:
         else:
             self.load_verse_content()
         
-        # Update header info
-        surah_name = self.surah_names.get(self.current_surah, {}).get('name', 'Unknown')
-        total_ayahs = self.surah_names.get(self.current_surah, {}).get('ayahs', 1)
-        
-        self.surah_title.config(text=f"Surah {surah_name}")
-        self.ayah_info.config(text=f"Ayah {self.current_ayah} of {total_ayahs}")
+        # Update achievement display
+        self.update_achievement_display()
         
         # Load notes for current verse
         self.load_notes()
         
         # Update status
-        self.status_label.config(text=f"Loaded: Surah {surah_name}, Ayah {self.current_ayah}")
+        self.status_label.config(text=f"Loaded: Page {self.current_page}")
 
     def analyze_page_complexity(self, image_path):
         """Analyze page complexity based on ink density/darkness"""
@@ -1120,6 +1152,11 @@ class QuranApp:
         """Check and award achievements"""
         new_achievements = []
         
+        # First page achievement
+        if self.user_profile['total_pages_read'] >= 1 and "first_page" not in self.achievements:
+            new_achievements.append("first_page")
+            self.achievements.append("first_page")
+        
         # Reading streak achievements
         if self.streak >= 7 and "week_streak" not in self.achievements:
             new_achievements.append("week_streak")
@@ -1134,31 +1171,63 @@ class QuranApp:
             new_achievements.append("points_1000")
             self.achievements.append("points_1000")
         
+        if self.points >= 5000 and "points_5000" not in self.achievements:
+            new_achievements.append("points_5000")
+            self.achievements.append("points_5000")
+        
         # Reading time achievements
         total_minutes = self.reading_time // 60
         if total_minutes >= 60 and "reading_hour" not in self.achievements:
             new_achievements.append("reading_hour")
             self.achievements.append("reading_hour")
         
+        if total_minutes >= 480 and "reading_day" not in self.achievements:  # 8 hours
+            new_achievements.append("reading_day")
+            self.achievements.append("reading_day")
+        
+        # Page count achievements
+        if self.user_profile['total_pages_read'] >= 100 and "page_100" not in self.achievements:
+            new_achievements.append("page_100")
+            self.achievements.append("page_100")
+        
+        if self.user_profile['total_pages_read'] >= 500 and "page_500" not in self.achievements:
+            new_achievements.append("page_500")
+            self.achievements.append("page_500")
+        
+        if self.user_profile['total_pages_read'] >= 604 and "complete_quran" not in self.achievements:
+            new_achievements.append("complete_quran")
+            self.achievements.append("complete_quran")
+        
         # Show new achievements
         if new_achievements:
+            self.recent_achievements.extend(new_achievements)
             self.show_achievement_notification(new_achievements)
             self.save_user_data()
+            
+            # Award points for achievements
+            for achievement_id in new_achievements:
+                if achievement_id in self.achievement_definitions:
+                    self.points += self.achievement_definitions[achievement_id]['points']
+                    self.points_label.config(text=f"{self.points}")
 
     def show_achievement_notification(self, achievements):
-        """Show achievement notification"""
-        achievement_names = {
-            "week_streak": "7 Day Streak! 🔥",
-            "month_streak": "30 Day Streak! 🏆",
-            "points_1000": "1000 Points! ⭐",
-            "reading_hour": "1 Hour Reading! 📚"
-        }
-        
-        message = "New Achievement(s) Unlocked!\n\n"
+        """Show achievement notification with sound"""
+        message = "🎉 New Achievement(s) Unlocked! 🎉\n\n"
         for achievement in achievements:
-            message += f"• {achievement_names.get(achievement, achievement)}\n"
+            achievement_info = self.achievement_definitions.get(achievement, {})
+            name = achievement_info.get('name', achievement)
+            icon = achievement_info.get('icon', '🏆')
+            points = achievement_info.get('points', 0)
+            message += f"{icon} {name} (+{points} points)\n"
         
+        # Play achievement sound
+        self.play_achievement_sound()
+        
+        # Show notification
         messagebox.showinfo("Achievement Unlocked!", message)
+        
+        # Update achievement display
+        self.update_achievement_display()
 
     def show_bookmarks(self):
         """Show bookmarks window"""
@@ -1497,12 +1566,291 @@ class QuranApp:
             'reading_history': self.reading_history,
             'user_profile': self.user_profile,
             'online_sync_enabled': self.online_sync_enabled,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            'unlocked_backgrounds': self.unlocked_backgrounds,
+            'current_background': self.current_background
         }
         
         with open('user_data.json', 'w') as f:
             json.dump(data, f, indent=2)
     
+    def update_color_scheme(self):
+        """Update color scheme based on current background"""
+        bg_color = self.available_backgrounds[self.current_background]['color']
+        
+        # Create complementary colors based on background
+        self.colors = {
+            'primary': '#16213e',
+            'secondary': '#0f3460', 
+            'accent': '#e94560',
+            'success': '#4caf50',
+            'warning': '#ff9800',
+            'background': bg_color,
+            'surface': self.lighten_color(bg_color, 0.2),
+            'text': '#ffffff',
+            'text_secondary': '#b0b0b0',
+            'arabic_text': '#2d5a27',
+            'arabic_bg': '#f8f9fa'
+        }
+    
+    def lighten_color(self, hex_color, factor):
+        """Lighten a hex color by a factor"""
+        hex_color = hex_color.lstrip('#')
+        r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+        r = min(255, int(r + (255 - r) * factor))
+        g = min(255, int(g + (255 - g) * factor))
+        b = min(255, int(b + (255 - b) * factor))
+        return f"#{r:02x}{g:02x}{b:02x}"
+    
+    def apply_background(self):
+        """Apply current background to the application"""
+        bg_color = self.available_backgrounds[self.current_background]['color']
+        self.root.configure(bg=bg_color)
+        
+        # Update all relevant widgets
+        if hasattr(self, 'main_container'):
+            self.main_container.configure(bg=bg_color)
+    
+    def play_achievement_sound(self):
+        """Play sound effect for achievement"""
+        if self.sound_enabled:
+            try:
+                # Play a simple beep sound
+                winsound.Beep(1000, 200)  # 1000Hz for 200ms
+            except:
+                pass
+    
+    def update_achievement_display(self):
+        """Update the achievement display at top middle"""
+        if self.recent_achievements:
+            # Show the most recent achievement
+            latest = self.recent_achievements[-1]
+            achievement_info = self.achievement_definitions.get(latest, {})
+            display_text = f"{achievement_info.get('icon', '🏆')} {achievement_info.get('name', latest)}"
+            self.achievement_display.config(text=display_text)
+            
+            # Clear after 5 seconds
+            self.root.after(5000, lambda: self.achievement_display.config(text=""))
+        else:
+            self.achievement_display.config(text="")
+    
+    def open_customization_shop(self):
+        """Open customization shop window"""
+        shop_window = tk.Toplevel(self.root)
+        shop_window.title("Customization Shop")
+        shop_window.geometry("800x600")
+        shop_window.configure(bg=self.colors['background'])
+        
+        # Header
+        header_frame = tk.Frame(shop_window, bg=self.colors['primary'], height=80)
+        header_frame.pack(fill='x', padx=10, pady=10)
+        header_frame.pack_propagate(False)
+        
+        tk.Label(header_frame, text="🎨 Customization Shop", 
+                font=('Segoe UI', 20, 'bold'),
+                bg=self.colors['primary'], fg=self.colors['text']).pack(expand=True)
+        
+        # Points display
+        points_frame = tk.Frame(shop_window, bg=self.colors['surface'])
+        points_frame.pack(fill='x', padx=10, pady=5)
+        
+        tk.Label(points_frame, text=f"Your Points: {self.points}", 
+                font=('Segoe UI', 16, 'bold'),
+                bg=self.colors['surface'], fg=self.colors['success']).pack(side='left', padx=10, pady=10)
+        
+        # Backgrounds section
+        bg_frame = tk.LabelFrame(shop_window, text="Background Themes", 
+                                bg=self.colors['surface'], fg=self.colors['text'],
+                                font=('Segoe UI', 14, 'bold'))
+        bg_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        # Create grid for backgrounds
+        bg_grid = tk.Frame(bg_frame, bg=self.colors['surface'])
+        bg_grid.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        row = 0
+        col = 0
+        for bg_id, bg_info in self.available_backgrounds.items():
+            bg_button_frame = tk.Frame(bg_grid, bg=bg_info['color'], relief='raised', bd=2)
+            bg_button_frame.grid(row=row, column=col, padx=5, pady=5, sticky='nsew')
+            
+            # Background preview
+            preview = tk.Frame(bg_button_frame, bg=bg_info['color'], width=100, height=60)
+            preview.pack(pady=5)
+            
+            # Background name
+            name_label = tk.Label(bg_button_frame, text=bg_info['name'], 
+                                font=('Segoe UI', 10, 'bold'),
+                                bg=bg_info['color'], fg='white')
+            name_label.pack()
+            
+            # Cost and status
+            if bg_id in self.unlocked_backgrounds:
+                if bg_id == self.current_background:
+                    status_text = "✓ Current"
+                    status_color = self.colors['success']
+                else:
+                    status_text = "✓ Owned"
+                    status_color = self.colors['text_secondary']
+            else:
+                status_text = f"Cost: {bg_info['cost']} pts"
+                status_color = self.colors['warning']
+            
+            status_label = tk.Label(bg_button_frame, text=status_text,
+                                  font=('Segoe UI', 9),
+                                  bg=bg_info['color'], fg=status_color)
+            status_label.pack()
+            
+            # Action button
+            if bg_id in self.unlocked_backgrounds:
+                if bg_id != self.current_background:
+                    action_text = "Select"
+                    action_command = lambda b=bg_id: self.select_background(b, shop_window)
+                else:
+                    action_text = "Selected"
+                    action_command = None
+            else:
+                action_text = "Buy"
+                action_command = lambda b=bg_id: self.buy_background(b, shop_window)
+            
+            if action_command:
+                action_button = tk.Button(bg_button_frame, text=action_text,
+                                        command=action_command,
+                                        bg=self.colors['accent'], fg='white',
+                                        font=('Segoe UI', 9))
+                action_button.pack(pady=2)
+            else:
+                action_label = tk.Label(bg_button_frame, text=action_text,
+                                      font=('Segoe UI', 9, 'bold'),
+                                      bg=bg_info['color'], fg=self.colors['success'])
+                action_label.pack(pady=2)
+            
+            col += 1
+            if col >= 4:
+                col = 0
+                row += 1
+        
+        # Configure grid weights
+        for i in range(4):
+            bg_grid.columnconfigure(i, weight=1)
+    
+    def buy_background(self, bg_id, window):
+        """Buy a background with points"""
+        bg_info = self.available_backgrounds[bg_id]
+        
+        if self.points >= bg_info['cost']:
+            self.points -= bg_info['cost']
+            self.unlocked_backgrounds.append(bg_id)
+            self.save_user_data()
+            self.points_label.config(text=f"{self.points}")
+            
+            messagebox.showinfo("Purchase Successful", 
+                              f"You've purchased {bg_info['name']} for {bg_info['cost']} points!")
+            
+            # Refresh the shop window
+            window.destroy()
+            self.open_customization_shop()
+        else:
+            messagebox.showwarning("Insufficient Points", 
+                                 f"You need {bg_info['cost']} points to buy {bg_info['name']}.\nYou have {self.points} points.")
+    
+    def select_background(self, bg_id, window):
+        """Select a background theme"""
+        self.current_background = bg_id
+        self.update_color_scheme()
+        self.apply_background()
+        self.save_user_data()
+        
+        messagebox.showinfo("Background Changed", 
+                          f"Background changed to {self.available_backgrounds[bg_id]['name']}!")
+        
+        # Refresh the shop window
+        window.destroy()
+        self.open_customization_shop()
+    
+    def show_achievements_window(self):
+        """Show achievements window"""
+        achievements_window = tk.Toplevel(self.root)
+        achievements_window.title("Achievements")
+        achievements_window.geometry("700x500")
+        achievements_window.configure(bg=self.colors['background'])
+        
+        # Header
+        header_frame = tk.Frame(achievements_window, bg=self.colors['primary'], height=80)
+        header_frame.pack(fill='x', padx=10, pady=10)
+        header_frame.pack_propagate(False)
+        
+        tk.Label(header_frame, text="🏆 Achievements", 
+                font=('Segoe UI', 20, 'bold'),
+                bg=self.colors['primary'], fg=self.colors['text']).pack(expand=True)
+        
+        # Achievements list
+        achievements_frame = tk.Frame(achievements_window, bg=self.colors['background'])
+        achievements_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        # Create scrollable frame
+        canvas = tk.Canvas(achievements_frame, bg=self.colors['background'])
+        scrollbar = ttk.Scrollbar(achievements_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg=self.colors['background'])
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        for achievement_id, achievement_info in self.achievement_definitions.items():
+            achievement_frame = tk.Frame(scrollable_frame, bg=self.colors['surface'], relief='raised', bd=1)
+            achievement_frame.pack(fill='x', padx=5, pady=5)
+            
+            # Achievement icon and name
+            icon_label = tk.Label(achievement_frame, text=achievement_info['icon'], 
+                                font=('Segoe UI', 24),
+                                bg=self.colors['surface'], fg=self.colors['text'])
+            icon_label.pack(side='left', padx=10, pady=10)
+            
+            # Achievement details
+            details_frame = tk.Frame(achievement_frame, bg=self.colors['surface'])
+            details_frame.pack(side='left', fill='both', expand=True, padx=10, pady=10)
+            
+            name_label = tk.Label(details_frame, text=achievement_info['name'], 
+                                font=('Segoe UI', 14, 'bold'),
+                                bg=self.colors['surface'], fg=self.colors['text'])
+            name_label.pack(anchor='w')
+            
+            desc_label = tk.Label(details_frame, text=achievement_info['description'], 
+                                font=('Segoe UI', 10),
+                                bg=self.colors['surface'], fg=self.colors['text_secondary'])
+            desc_label.pack(anchor='w')
+            
+            # Status and points
+            status_frame = tk.Frame(achievement_frame, bg=self.colors['surface'])
+            status_frame.pack(side='right', padx=10, pady=10)
+            
+            if achievement_id in self.achievements:
+                status_text = "✓ Unlocked"
+                status_color = self.colors['success']
+                points_text = f"+{achievement_info['points']} pts"
+            else:
+                status_text = "🔒 Locked"
+                status_color = self.colors['text_secondary']
+                points_text = f"{achievement_info['points']} pts"
+            
+            status_label = tk.Label(status_frame, text=status_text,
+                                  font=('Segoe UI', 12, 'bold'),
+                                  bg=self.colors['surface'], fg=status_color)
+            status_label.pack()
+            
+            points_label = tk.Label(status_frame, text=points_text,
+                                  font=('Segoe UI', 10),
+                                  bg=self.colors['surface'], fg=self.colors['accent'])
+            points_label.pack()
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
     def on_closing(self):
         """Handle application closing"""
         self.save_user_data()
