@@ -1,217 +1,219 @@
-# Enhanced Quran Reader App
+# World War Strategy Telegram Bot
 
-A comprehensive desktop application for daily Quran reading with advanced features including statistics tracking, achievements, community chat, and more.
+A comprehensive multiplayer strategy game bot for Telegram that simulates a complex world war scenario with economy, military, politics, and diplomacy systems.
 
-## Features
+## 🎮 Features
 
-### Core Reading Features
-- **Daily Reading Tracker**: Track your daily Quran reading progress
-- **Reading Timer**: Built-in timer to track reading sessions
-- **Progress Tracking**: Visual progress bars and statistics
-- **Page Navigation**: Easy navigation through Quran pages
-- **Reading Streaks**: Track consecutive days of reading
+### Core Systems
+- **Economy System**: Dynamic material trading, fluctuating prices, player-to-player trades
+- **Military System**: Unit management, combat mechanics, territory control
+- **Province Management**: Resource production, building construction, governance
+- **Quest System**: Procedurally generated missions with rewards
+- **Technology Tree**: Research system with tiered unlocks
+- **Politics & Diplomacy**: Alliances, treaties, espionage
+- **World Simulation**: Dynamic events, weather, AI factions
 
-### Advanced Features
-- **SQLite Database**: Persistent data storage for all user data
-- **Achievement System**: Unlock achievements based on reading milestones
-- **Statistics Dashboard**: Comprehensive reading analytics
-- **Bookmark System**: Save and manage bookmarks with notes
-- **Community Chat**: Connect with other readers (simulated)
-- **Settings Management**: Customizable user preferences
-- **Logging System**: Detailed logging for debugging and monitoring
+### Game Mechanics
+- **Player Progression**: Leveling system with ranks (Commander → Supreme Leader)
+- **Resource Management**: Iron, oil, food, gold, uranium, steel
+- **Combat System**: Terrain, weather, and morale effects
+- **Diplomatic Relations**: Alliances, trade agreements, wars
+- **World Events**: Economic booms, natural disasters, political changes
 
-### User Interface
-- **Modern Design**: Clean, responsive interface with Islamic color scheme
-- **Scrollable Content**: Handle large amounts of content efficiently
-- **Real-time Updates**: Live updates of statistics and progress
-- **Settings Panel**: Easy access to user preferences
+## 🚀 Quick Start
 
-## Installation
+### Prerequisites
+- Python 3.11+
+- PostgreSQL database
+- Telegram Bot Token
 
-1. **Clone or download the application files**
-2. **Install Python dependencies**:
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd world-war-telegram-bot
+   ```
+
+2. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
-3. **Run the application**:
+
+3. **Set up environment variables**
    ```bash
-   python improved_quran_app.py
+   cp .env.example .env
+   # Edit .env with your configuration
    ```
 
-## Usage
+4. **Configure database**
+   - Create a PostgreSQL database
+   - Update `DATABASE_URL` in `.env`
+   - Update `config.json` with your database URL
+
+5. **Set up bot token**
+   - Get a bot token from @BotFather
+   - Add it to `.env` as `BOT_TOKEN`
+
+6. **Run the bot**
+   ```bash
+   python main.py
+   ```
+
+## ⚙️ Configuration
+
+### Environment Variables (.env)
+```env
+BOT_TOKEN=your_telegram_bot_token_here
+DATABASE_URL=postgresql://user:password@localhost/worldwar_bot
+ADMIN_IDS=123456789,987654321
+DEBUG=false
+```
+
+### Game Configuration (config.json)
+- **Bot Settings**: Token, admin IDs, debug mode
+- **Database**: Connection URL and settings
+- **Game Balance**: Income rates, cooldowns, difficulty
+- **Economy**: Material prices and volatility
+- **Military**: Unit stats and costs
+- **World**: Province count, AI factions, event frequency
+
+## 🎯 Commands
+
+### Basic Commands
+- `/start` - Start playing or view status
+- `/help` - Show all available commands
+- `/status` - View your nation's current status
+- `/profile` - Detailed player profile
+
+### Economy Commands
+- `/economy` - Economic overview and trading
+- `/trade` - Open trading interface
+- `/materials` - View your resources
+
+### Military Commands
+- `/military` - Military management
+- `/attack` - Attack other players or provinces
+- `/build` - Build military units
+
+### World Commands
+- `/map` - View world map
+- `/province` - Manage your provinces
+- `/quest` - Available quests and missions
+- `/research` - Research new technologies
+- `/alliance` - Alliance management
+
+### Admin Commands
+- `/admin` - Admin panel (admin only)
+
+## 🏗️ Architecture
+
+### Core Components
+- **bot.py**: Main bot class with command handlers
+- **database.py**: SQLAlchemy models and database management
+- **economy.py**: Economy system with trading and price fluctuations
+- **military.py**: Military units, combat, and battle simulation
+- **province_manager.py**: Province management and resource production
+- **quest_system.py**: Quest generation and mission management
+- **technology.py**: Research tree and technology unlocks
+- **world_simulation.py**: World events and AI faction simulation
+- **admin.py**: Administrative functions and game management
+- **ui_menus.py**: Interactive inline keyboards and UI elements
+
+### Database Schema
+- **Players**: User accounts, stats, resources
+- **Nations**: Player nations with government types
+- **Provinces**: World map with resources and buildings
+- **Units**: Military units with stats and locations
+- **Quests**: Available and active missions
+- **Technologies**: Research tree and unlocks
+- **Alliances**: Diplomatic relationships
+- **Trades**: Player-to-player trading
+- **Battles**: Combat records and history
+- **World Events**: Dynamic global events
+
+## 🎮 Gameplay
 
 ### Getting Started
-1. Launch the application
-2. The app will automatically create a database and load your data
-3. Click "Start Reading" to begin a reading session
-4. Read for at least 5 minutes to unlock the "Next Page" button
-5. Use the "Next Page" button to advance and earn points
+1. Use `/start` to create your character
+2. Build your first military units with `/build`
+3. Claim provinces with `/province`
+4. Start trading resources with `/trade`
+5. Take on quests with `/quest`
+6. Research technologies with `/research`
 
-### Features Guide
+### Strategy Tips
+- **Economy**: Trade materials when prices are high
+- **Military**: Balance unit types for effective combat
+- **Diplomacy**: Form alliances to protect your interests
+- **Research**: Focus on technologies that match your strategy
+- **Quests**: Complete missions for experience and rewards
 
-#### Reading Sessions
-- **Start Reading**: Begin a timed reading session
-- **Pause/Resume**: Pause and resume your reading session
-- **Next Page**: Advance to the next page (unlocked after 5 minutes of reading)
-- **Reading Timer**: Track your session duration
+## 🔧 Development
 
-#### Statistics & Progress
-- **Progress Bar**: Visual representation of your overall progress
-- **Daily Goals**: Set and track daily reading goals
-- **Streak Counter**: Track consecutive days of reading
-- **Points System**: Earn points for reading sessions
-- **Detailed Statistics**: View comprehensive reading analytics
+### Adding New Features
+1. Create new modules in the project root
+2. Import and integrate with the main bot class
+3. Add command handlers in `bot.py`
+4. Create UI elements in `ui_menus.py`
+5. Update database models if needed
 
-#### Bookmarks
-- **Add Bookmarks**: Bookmark any page with optional notes
-- **View Bookmarks**: Access your bookmarked pages
-- **Bookmark Management**: Organize and manage your bookmarks
+### Database Migrations
+- Modify models in `database.py`
+- Run the bot to auto-create tables
+- For complex changes, create migration scripts
 
-#### Community Features
-- **Chat System**: Connect with other readers (simulated)
-- **Message History**: Persistent chat message storage
-- **Real-time Updates**: Live chat updates
+### Testing
+- Use the debug mode in `config.json`
+- Test with a small group first
+- Monitor logs for errors
 
-#### Settings
-- **Username**: Set your display name
-- **Daily Goals**: Configure daily reading targets
-- **Font Size**: Adjust text size for better readability
-- **Auto-save**: Automatic data saving
+## 📊 Monitoring
 
-#### Achievements
-The app includes several achievements that unlock automatically:
-- **First Steps**: Read your first page
-- **Weekly Warrior**: Maintain a 7-day reading streak
-- **Monthly Master**: Maintain a 30-day reading streak
-- **Century Reader**: Read 100 pages
-- **Halfway Hero**: Read 500 pages
-- **Quran Master**: Complete the entire Quran
-- **Time Master**: Spend 100 hours reading
+### Logs
+- Bot logs are written to `bot.log`
+- Database queries are logged in debug mode
+- Error handling with detailed stack traces
 
-## Database Schema
+### Admin Tools
+- `/admin` command for game statistics
+- Player management and moderation
+- World event creation and management
+- Data backup and restore functionality
 
-The application uses SQLite with the following tables:
-- `user_data`: User progress and statistics
-- `reading_sessions`: Individual reading session records
-- `bookmarks`: User bookmarks with notes
-- `chat_messages`: Community chat messages
-- `achievements`: Achievement definitions and unlock status
-
-## File Structure
-
-```
-quran_app/
-├── improved_quran_app.py    # Main application file
-├── requirements.txt         # Python dependencies
-├── README.md               # This file
-├── quran_app.db           # SQLite database (created automatically)
-├── settings.json          # User settings (created automatically)
-└── quran_app.log          # Application logs (created automatically)
-```
-
-## Technical Features
-
-### Error Handling
-- Comprehensive error handling throughout the application
-- Graceful handling of database errors
-- User-friendly error messages
-- Detailed logging for debugging
-
-### Data Persistence
-- SQLite database for reliable data storage
-- Automatic data saving
-- Backup and recovery capabilities
-- Data integrity checks
-
-### Performance
-- Efficient database queries
-- Optimized UI updates
-- Memory management
-- Responsive interface
-
-### Security
-- Input validation
-- SQL injection prevention
-- Safe file handling
-- Error logging without sensitive data exposure
-
-## Customization
-
-### Adding New Achievements
-Edit the `AchievementSystem` class to add new achievements:
-
-```python
-self.achievements = {
-    'new_achievement': {
-        'name': 'Achievement Name',
-        'description': 'Achievement description',
-        'points_required': 0
-    }
-}
-```
-
-### Modifying UI Colors
-Update the color scheme in the `create_widgets` methods:
-
-```python
-# Example: Change header color
-header_frame = tk.Frame(parent, bg='#your_color')
-```
-
-### Adding New Statistics
-Extend the `get_reading_stats` method in `DatabaseManager`:
-
-```python
-def get_reading_stats(self) -> Dict:
-    # Add your new statistics here
-    pass
-```
-
-## Troubleshooting
+## 🚨 Troubleshooting
 
 ### Common Issues
+1. **Bot not responding**: Check bot token and network connection
+2. **Database errors**: Verify PostgreSQL connection and permissions
+3. **Import errors**: Ensure all dependencies are installed
+4. **Memory issues**: Monitor database size and optimize queries
 
-1. **Database Errors**: Delete `quran_app.db` to reset the database
-2. **Settings Issues**: Delete `settings.json` to reset settings
-3. **UI Problems**: Check the log file `quran_app.log` for errors
-4. **Performance Issues**: Restart the application
+### Support
+- Check logs for error messages
+- Verify configuration files
+- Test with minimal setup first
+- Contact developers for complex issues
 
-### Log Files
-Check `quran_app.log` for detailed error information and debugging data.
+## 📝 License
 
-## Future Enhancements
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-Potential improvements for future versions:
-- Audio recitation support
-- Verse highlighting and commentary
-- Multi-language support
-- Cloud synchronization
-- Mobile app version
-- Real-time community features
-- Advanced analytics and insights
-- Integration with Islamic calendar
-- Prayer time reminders
+## 🤝 Contributing
 
-## Contributing
-
-To contribute to this project:
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
+4. Add tests if applicable
 5. Submit a pull request
 
-## License
+## 📞 Support
 
-This project is open source and available under the MIT License.
-
-## Support
-
-For support or questions:
-1. Check the troubleshooting section
-2. Review the log files
-3. Create an issue in the project repository
+For support and questions:
+- Create an issue on GitHub
+- Contact the development team
+- Check the documentation
 
 ---
 
-**May Allah accept our efforts in spreading the knowledge of the Quran. Ameen.**
+**Happy Gaming! 🎖️**
