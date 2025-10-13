@@ -31,11 +31,17 @@ class QuranApp:
         except:
             self.sound_enabled = False
         
-        # Dynamic color scheme based on current background
-        self.update_color_scheme()
-        
-        # Initialize database
-        self.init_database()
+        # Customization system - must be initialized before update_color_scheme
+        self.available_backgrounds = {
+            'default': {'name': 'Default', 'cost': 0, 'color': '#2a2a2a'},
+            'ocean': {'name': 'Ocean Blue', 'cost': 100, 'color': '#1e3a8a'},
+            'forest': {'name': 'Forest Green', 'cost': 150, 'color': '#166534'},
+            'sunset': {'name': 'Sunset Orange', 'cost': 200, 'color': '#ea580c'},
+            'purple': {'name': 'Royal Purple', 'cost': 250, 'color': '#7c3aed'},
+            'gold': {'name': 'Golden', 'cost': 500, 'color': '#f59e0b'},
+            'space': {'name': 'Space Theme', 'cost': 750, 'color': '#1f2937'},
+            'rainbow': {'name': 'Rainbow', 'cost': 1000, 'color': '#ec4899'}
+        }
         
         # User data
         self.user_data = self.load_user_data()
@@ -50,19 +56,15 @@ class QuranApp:
         self.notes = self.user_data.get('notes', {})
         self.achievements = self.user_data.get('achievements', [])
         
-        # Customization system
-        self.available_backgrounds = {
-            'default': {'name': 'Default', 'cost': 0, 'color': '#2a2a2a'},
-            'ocean': {'name': 'Ocean Blue', 'cost': 100, 'color': '#1e3a8a'},
-            'forest': {'name': 'Forest Green', 'cost': 150, 'color': '#166534'},
-            'sunset': {'name': 'Sunset Orange', 'cost': 200, 'color': '#ea580c'},
-            'purple': {'name': 'Royal Purple', 'cost': 250, 'color': '#7c3aed'},
-            'gold': {'name': 'Golden', 'cost': 500, 'color': '#f59e0b'},
-            'space': {'name': 'Space Theme', 'cost': 750, 'color': '#1f2937'},
-            'rainbow': {'name': 'Rainbow', 'cost': 1000, 'color': '#ec4899'}
-        }
+        # Background customization
         self.unlocked_backgrounds = self.user_data.get('unlocked_backgrounds', ['default'])
         self.current_background = self.user_data.get('current_background', 'default')
+        
+        # Dynamic color scheme based on current background
+        self.update_color_scheme()
+        
+        # Initialize database
+        self.init_database()
         
         # Enhanced achievement system
         self.achievement_definitions = {
