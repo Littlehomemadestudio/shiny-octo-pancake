@@ -18,6 +18,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from database import DatabaseManager, Player, Nation, Province, PlayerMaterial, PlayerUnit
 from economy import EconomyManager, TradeManager, DailyIncomeManager
 from military import MilitaryManager, UnitUpkeepManager
+from military_assets import MilitaryAssetsDatabase
 from province_manager import ProvinceManager
 from quest_system import QuestManager
 from technology import TechnologyManager
@@ -87,6 +88,7 @@ class WorldWarBot:
         self.dp.message.register(self.military_command, Command("military"))
         self.dp.message.register(self.attack_command, Command("attack"))
         self.dp.message.register(self.build_units_command, Command("build"))
+        self.dp.message.register(self.assets_command, Command("assets"))
         
         # Province commands
         self.dp.message.register(self.province_command, Command("province"))
@@ -205,6 +207,7 @@ Use /help to see all available commands.
 /military - Military management
 /attack - Attack other players or provinces
 /build - Build military units
+/assets - View all available military assets
 
 **🗺️ World:**
 /map - View world map
@@ -419,6 +422,40 @@ Use /trade to buy and sell resources!
         keyboard = self.ui.get_build_menu_keyboard()
         await message.answer("🏭 **Unit Production**\n\nSelect unit type to build:", reply_markup=keyboard, parse_mode="Markdown")
     
+    async def assets_command(self, message: types.Message):
+        """Handle /assets command - show available military assets"""
+        user_id = message.from_user.id
+        
+        with self.db_manager.get_session() as session:
+            player = session.query(Player).filter_by(telegram_id=user_id).first()
+            if not player:
+                await message.answer("❌ You need to start the game first with /start")
+                return
+            
+            # Get available assets by category
+            assets_db = self.military.assets_db
+            categories = assets_db.get_asset_categories()
+            
+            assets_text = "🎖️ **Military Assets Database**\n\n"
+            assets_text += f"📊 **Total Assets Available:** {assets_db.get_total_assets()}\n\n"
+            
+            for category in categories[:3]:  # Show first 3 categories
+                assets_text += f"**{category.title()}:**\n"
+                category_assets = assets_db.get_assets_by_category(category)[:5]  # Show first 5
+                
+                for asset in category_assets:
+                    emoji = asset.emoji
+                    cost = asset.cost
+                    tier = "⭐" * asset.tier
+                    assets_text += f"{emoji} **{asset.name}** {tier} - {cost} gold\n"
+                
+                assets_text += "\n"
+            
+            assets_text += "Use /build to construct units!"
+            
+            keyboard = self.ui.get_assets_menu_keyboard()
+            await message.answer(assets_text, reply_markup=keyboard, parse_mode="Markdown")
+    
     async def province_command(self, message: types.Message):
         """Handle /province command"""
         keyboard = self.ui.get_province_menu_keyboard()
@@ -560,6 +597,8 @@ Use /trade to buy and sell resources!
             await self.build_units_command(callback_query.message)
         elif data == "game_military_units":
             await self.military_command(callback_query.message)
+        elif data == "game_military_assets":
+            await self.assets_command(callback_query.message)
         
         await callback_query.answer()
     

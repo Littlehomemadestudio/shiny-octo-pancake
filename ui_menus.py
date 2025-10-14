@@ -147,11 +147,15 @@ class UIManager:
             callback_data="game_military_units"
         ))
         builder.add(InlineKeyboardButton(
+            text="🎖️ Assets Database",
+            callback_data="game_military_assets"
+        ))
+        builder.add(InlineKeyboardButton(
             text=f"{self.emoji_map['back']} Back",
             callback_data="game_main_menu"
         ))
         
-        builder.adjust(2, 2)
+        builder.adjust(2, 2, 1)
         return builder.as_markup()
     
     def get_attack_menu_keyboard(self) -> InlineKeyboardMarkup:
@@ -196,6 +200,30 @@ class UIManager:
         ))
         
         builder.adjust(2, 2, 1, 1)
+        return builder.as_markup()
+    
+    def get_assets_menu_keyboard(self) -> InlineKeyboardMarkup:
+        """Get assets menu keyboard"""
+        builder = InlineKeyboardBuilder()
+        
+        categories = ["infantry", "armor", "aircraft", "naval", "missile", "defense"]
+        for category in categories:
+            emoji = {"infantry": "👥", "armor": "🚗", "aircraft": "✈️", "naval": "🚢", "missile": "🚀", "defense": "🛡️"}.get(category, "⚔️")
+            builder.add(InlineKeyboardButton(
+                text=f"{emoji} {category.title()}",
+                callback_data=f"game_assets_{category}"
+            ))
+        
+        builder.add(InlineKeyboardButton(
+            text="🔍 Search Assets",
+            callback_data="game_assets_search"
+        ))
+        builder.add(InlineKeyboardButton(
+            text=f"{self.emoji_map['back']} Back",
+            callback_data="game_military_menu"
+        ))
+        
+        builder.adjust(2, 2, 2, 1, 1)
         return builder.as_markup()
     
     def get_province_menu_keyboard(self) -> InlineKeyboardMarkup:

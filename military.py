@@ -6,6 +6,7 @@ import math
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 from database import DatabaseManager, Player, PlayerUnit, Battle, Province
+from military_assets import MilitaryAssetsDatabase, MilitaryAsset
 
 class MilitaryManager:
     def __init__(self, config: Dict):
@@ -13,19 +14,32 @@ class MilitaryManager:
         self.unit_types = config["unit_types"]
         self.battle_cooldown = config["battle_cooldown"]
         self.db = None  # Will be set by bot
+        self.assets_db = MilitaryAssetsDatabase()
     
-    def get_unit_stats(self, unit_type: str) -> Dict:
-        """Get unit statistics"""
+    def get_unit_stats(self, unit_name: str) -> Optional[MilitaryAsset]:
+        """Get unit statistics from assets database"""
+        return self.assets_db.get_asset(unit_name)
+    
+    def get_legacy_unit_stats(self, unit_type: str) -> Dict:
+        """Get legacy unit statistics for backward compatibility"""
         return self.unit_types.get(unit_type, {})
     
-    def calculate_unit_cost(self, unit_type: str, quantity: int) -> float:
+    def calculate_unit_cost(self, unit_name: str, quantity: int) -> float:
         """Calculate cost to build units"""
-        stats = self.get_unit_stats(unit_type)
+        asset = self.get_unit_stats(unit_name)
+        if asset:
+            return asset.cost * quantity
+        # Fallback to legacy system
+        stats = self.get_legacy_unit_stats(unit_name)
         return stats.get("cost", 0) * quantity
     
-    def calculate_upkeep_cost(self, unit_type: str, quantity: int) -> float:
+    def calculate_upkeep_cost(self, unit_name: str, quantity: int) -> float:
         """Calculate daily upkeep cost for units"""
-        stats = self.get_unit_stats(unit_type)
+        asset = self.get_unit_stats(unit_name)
+        if asset:
+            return asset.upkeep * quantity
+        # Fallback to legacy system
+        stats = self.get_legacy_unit_stats(unit_name)
         return stats.get("upkeep", 0) * quantity
     
     def can_afford_units(self, player: Player, unit_type: str, quantity: int) -> bool:
@@ -33,7 +47,7 @@ class MilitaryManager:
         cost = self.calculate_unit_cost(unit_type, quantity)
         return player.gold >= cost
     
-    def build_units(self, player_id: int, unit_type: str, quantity: int, 
+    def build_units(self, player_id: int, unit_name: str, quantity: int, 
                    province_id: Optional[int] = None) -> bool:
         """Build units for a player"""
         with self.db.get_session() as session:
@@ -41,16 +55,21 @@ class MilitaryManager:
             if not player:
                 return False
             
-            if not self.can_afford_units(player, unit_type, quantity):
+            if not self.can_afford_units(player, unit_name, quantity):
                 return False
             
-            cost = self.calculate_unit_cost(unit_type, quantity)
+            cost = self.calculate_unit_cost(unit_name, quantity)
             player.gold -= cost
+            
+            # Get asset information
+            asset = self.get_unit_stats(unit_name)
+            if not asset:
+                return False
             
             # Find existing unit or create new one
             existing_unit = session.query(PlayerUnit).filter_by(
                 player_id=player_id,
-                unit_type=unit_type,
+                unit_name=unit_name,
                 province_id=province_id
             ).first()
             
@@ -59,7 +78,10 @@ class MilitaryManager:
             else:
                 new_unit = PlayerUnit(
                     player_id=player_id,
-                    unit_type=unit_type,
+                    unit_name=unit_name,
+                    unit_type=asset.category,
+                    subcategory=asset.subcategory,
+                    tier=asset.tier,
                     quantity=quantity,
                     province_id=province_id
                 )
@@ -79,21 +101,42 @@ class MilitaryManager:
         total_units = {}
         
         for unit in units:
-            if unit.unit_type in total_units:
-                total_units[unit.unit_type] += unit.quantity
+            if unit.unit_name in total_units:
+                total_units[unit.unit_name] += unit.quantity
             else:
-                total_units[unit.unit_type] = unit.quantity
+                total_units[unit.unit_name] = unit.quantity
         
         return total_units
+    
+    def get_units_by_category(self, player_id: int, category: str) -> Dict[str, int]:
+        """Get units by category for a player"""
+        units = self.get_player_units(player_id)
+        category_units = {}
+        
+        for unit in units:
+            if unit.unit_type == category:
+                if unit.unit_name in category_units:
+                    category_units[unit.unit_name] += unit.quantity
+                else:
+                    category_units[unit.unit_name] = unit.quantity
+        
+        return category_units
     
     def calculate_combat_power(self, units: Dict[str, int], morale: float = 100.0) -> float:
         """Calculate total combat power of units"""
         total_power = 0.0
         
-        for unit_type, quantity in units.items():
-            stats = self.get_unit_stats(unit_type)
-            attack = stats.get("attack", 0)
-            defense = stats.get("defense", 0)
+        for unit_name, quantity in units.items():
+            asset = self.get_unit_stats(unit_name)
+            if asset:
+                # Use asset stats
+                attack = asset.attack
+                defense = asset.defense
+            else:
+                # Fallback to legacy system
+                stats = self.get_legacy_unit_stats(unit_name)
+                attack = stats.get("attack", 0)
+                defense = stats.get("defense", 0)
             
             # Average of attack and defense
             unit_power = (attack + defense) / 2

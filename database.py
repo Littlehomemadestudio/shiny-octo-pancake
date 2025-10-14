@@ -110,11 +110,15 @@ class PlayerUnit(Base):
     id = Column(Integer, primary_key=True)
     player_id = Column(Integer, ForeignKey("players.id"), nullable=False)
     province_id = Column(Integer, ForeignKey("provinces.id"))
-    unit_type = Column(String(50), nullable=False)
+    unit_name = Column(String(100), nullable=False)  # Full name of the unit
+    unit_type = Column(String(50), nullable=False)   # Category (infantry, armor, etc.)
+    subcategory = Column(String(50), nullable=False) # Subcategory (basic, elite, etc.)
+    tier = Column(Integer, default=1)
     quantity = Column(Integer, default=0)
     experience = Column(Float, default=0.0)
     morale = Column(Float, default=100.0)
     fuel = Column(Float, default=100.0)
+    ammunition = Column(Float, default=100.0)
     last_supplied = Column(DateTime, default=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)
     
