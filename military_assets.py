@@ -32,7 +32,7 @@ class MilitaryAssetsDatabase:
         """Create comprehensive military assets database"""
         assets = {}
         
-        # INFANTRY UNITS (50 units)
+        # INFANTRY UNITS (100 units)
         infantry_units = [
             # Basic Infantry
             MilitaryAsset("Rifleman", "infantry", "basic", 1, 50, 5, 3, 2, 1, 1, 1, 0.1, "Basic foot soldier with rifle", [], [], "🪖"),
@@ -75,6 +75,96 @@ class MilitaryAssetsDatabase:
             MilitaryAsset("Plasma Trooper", "infantry", "future", 4, 700, 70, 18, 10, 3, 4, 1, 0.7, "Plasma weapon specialist", ["Plasma Technology"], ["plasma_weapons"], "⚡"),
             MilitaryAsset("Gravity Warrior", "infantry", "future", 4, 900, 90, 16, 14, 3, 3, 1, 0.9, "Gravity manipulation specialist", ["Gravity Control"], ["gravity_field", "levitation"], "🌌"),
             MilitaryAsset("Time Dilation Troop", "infantry", "future", 4, 1000, 100, 25, 8, 5, 2, 1, 1.0, "Time manipulation specialist", ["Temporal Technology"], ["time_slow", "precognition"], "⏰"),
+            
+            # Additional Basic Infantry
+            MilitaryAsset("Assault Trooper", "infantry", "basic", 1, 60, 6, 4, 3, 1, 2, 1, 0.1, "Heavily armed assault specialist", [], ["assault"], "⚔️"),
+            MilitaryAsset("Heavy Gunner", "infantry", "basic", 1, 90, 9, 6, 4, 1, 2, 1, 0.1, "Heavy weapons specialist", [], ["heavy_weapons"], "💥"),
+            MilitaryAsset("Scout", "infantry", "basic", 1, 40, 4, 2, 2, 2, 3, 1, 0.05, "Fast reconnaissance specialist", [], ["recon", "fast"], "🏃"),
+            MilitaryAsset("Combat Engineer", "infantry", "basic", 1, 80, 8, 3, 4, 1, 1, 1, 0.1, "Combat construction specialist", [], ["construction", "demolition"], "🔧"),
+            MilitaryAsset("Radio Operator", "infantry", "basic", 1, 55, 5, 2, 2, 1, 5, 1, 0.05, "Communications specialist", [], ["communications"], "📡"),
+            MilitaryAsset("Field Medic", "infantry", "basic", 1, 70, 7, 2, 3, 1, 1, 1, 0.1, "Combat medical specialist", [], ["healing", "medical"], "🏥"),
+            MilitaryAsset("Anti-Tank Trooper", "infantry", "basic", 1, 110, 11, 8, 2, 1, 3, 1, 0.1, "Anti-armor specialist", [], ["anti_armor"], "🚫"),
+            MilitaryAsset("Anti-Air Trooper", "infantry", "basic", 1, 100, 10, 7, 2, 1, 4, 1, 0.1, "Anti-aircraft specialist", [], ["anti_air"], "🚁"),
+            MilitaryAsset("Flame Trooper", "infantry", "basic", 1, 85, 8, 5, 2, 1, 2, 1, 0.1, "Flamethrower specialist", [], ["flame_weapon"], "🔥"),
+            MilitaryAsset("Marksman", "infantry", "basic", 1, 95, 9, 7, 2, 1, 5, 1, 0.1, "Precision marksman", [], ["precision", "long_range"], "🎯"),
+            
+            # Additional Elite Infantry
+            MilitaryAsset("Delta Force", "infantry", "elite", 2, 250, 25, 10, 8, 2, 3, 1, 0.25, "Elite special operations unit", ["Basic Training"], ["stealth", "infiltration", "demolition"], "🕴️"),
+            MilitaryAsset("Navy SEAL", "infantry", "elite", 2, 240, 24, 9, 7, 2, 2, 1, 0.25, "Naval special forces", ["Basic Training"], ["amphibious", "stealth"], "🌊"),
+            MilitaryAsset("SAS Operative", "infantry", "elite", 2, 230, 23, 8, 8, 2, 3, 1, 0.25, "Special air service operative", ["Basic Training"], ["stealth", "recon"], "🕴️"),
+            MilitaryAsset("Spetsnaz", "infantry", "elite", 2, 220, 22, 9, 7, 2, 2, 1, 0.25, "Russian special forces", ["Basic Training"], ["infiltration", "combat"], "⚔️"),
+            MilitaryAsset("GIGN Operative", "infantry", "elite", 2, 210, 21, 8, 8, 2, 2, 1, 0.25, "French special forces", ["Basic Training"], ["counter_terrorism", "precision"], "🛡️"),
+            MilitaryAsset("GSG-9 Operative", "infantry", "elite", 2, 200, 20, 7, 9, 2, 2, 1, 0.25, "German special forces", ["Basic Training"], ["counter_terrorism", "stealth"], "🛡️"),
+            MilitaryAsset("Sayeret Matkal", "infantry", "elite", 2, 260, 26, 10, 8, 2, 3, 1, 0.25, "Israeli special forces", ["Basic Training"], ["infiltration", "intelligence"], "🕴️"),
+            MilitaryAsset("JTF-2 Operative", "infantry", "elite", 2, 235, 23, 8, 7, 2, 2, 1, 0.25, "Canadian special forces", ["Basic Training"], ["stealth", "recon"], "🕴️"),
+            MilitaryAsset("SASR Operative", "infantry", "elite", 2, 225, 22, 8, 8, 2, 3, 1, 0.25, "Australian special forces", ["Basic Training"], ["recon", "infiltration"], "🕴️"),
+            MilitaryAsset("SBS Operative", "infantry", "elite", 2, 245, 24, 9, 7, 2, 2, 1, 0.25, "Special boat service", ["Basic Training"], ["amphibious", "stealth"], "🌊"),
+            
+            # Additional Advanced Infantry
+            MilitaryAsset("Cyber Commando", "infantry", "advanced", 3, 350, 35, 8, 10, 2, 2, 1, 0.35, "Cyber warfare specialist", ["Cyber Warfare"], ["hacking", "jamming", "stealth"], "💻"),
+            MilitaryAsset("Exosuit Marine", "infantry", "advanced", 3, 450, 45, 12, 14, 3, 2, 1, 0.45, "Powered exosuit marine", ["Advanced Materials"], ["enhanced_strength", "armor"], "🤖"),
+            MilitaryAsset("Stealth Assassin", "infantry", "advanced", 3, 400, 40, 10, 8, 2, 3, 1, 0.4, "Invisible assassin", ["Stealth Technology"], ["invisibility", "assassination"], "👻"),
+            MilitaryAsset("Psionic Warrior", "infantry", "advanced", 3, 550, 55, 14, 10, 2, 4, 1, 0.55, "Mind-powered warrior", ["Psionic Research"], ["mind_control", "telekinesis", "precognition"], "🧠"),
+            MilitaryAsset("Nanobot Legion", "infantry", "advanced", 3, 300, 30, 18, 3, 5, 1, 15, 0.3, "Swarm of combat nanobots", ["Nanotechnology"], ["swarm", "repair", "adaptation"], "🦠"),
+            MilitaryAsset("Quantum Ranger", "infantry", "advanced", 3, 500, 50, 11, 9, 3, 4, 1, 0.5, "Quantum-enhanced ranger", ["Quantum Technology"], ["quantum_shift", "phase"], "⚛️"),
+            MilitaryAsset("Plasma Trooper", "infantry", "advanced", 3, 420, 42, 13, 8, 2, 3, 1, 0.42, "Plasma weapon specialist", ["Plasma Technology"], ["plasma_weapons", "energy"], "⚡"),
+            MilitaryAsset("Gravity Soldier", "infantry", "advanced", 3, 480, 48, 12, 11, 2, 3, 1, 0.48, "Gravity manipulation soldier", ["Gravity Control"], ["gravity_field", "levitation"], "🌌"),
+            MilitaryAsset("Time Warrior", "infantry", "advanced", 3, 600, 60, 15, 9, 3, 2, 1, 0.6, "Time manipulation warrior", ["Temporal Technology"], ["time_slow", "precognition", "rewind"], "⏰"),
+            MilitaryAsset("Reality Bender", "infantry", "advanced", 3, 700, 70, 20, 12, 2, 4, 1, 0.7, "Reality manipulation specialist", ["Reality Technology"], ["reality_bend", "dimension_shift"], "🌀"),
+            
+            # Additional Specialized Infantry
+            MilitaryAsset("Mountain Ranger", "infantry", "specialized", 2, 140, 14, 6, 5, 1, 3, 1, 0.2, "High-altitude specialist", ["Basic Training"], ["mountain_warfare", "climbing"], "⛰️"),
+            MilitaryAsset("Desert Storm", "infantry", "specialized", 2, 130, 13, 5, 5, 1, 2, 1, 0.2, "Desert warfare specialist", ["Basic Training"], ["desert_warfare", "heat_resistance"], "🏜️"),
+            MilitaryAsset("Arctic Commando", "infantry", "specialized", 2, 150, 15, 6, 6, 1, 2, 1, 0.2, "Cold weather specialist", ["Basic Training"], ["arctic_warfare", "cold_resistance"], "🧊"),
+            MilitaryAsset("Urban Assault", "infantry", "specialized", 2, 160, 16, 7, 5, 1, 2, 1, 0.2, "City combat specialist", ["Basic Training"], ["urban_warfare", "close_combat"], "🏙️"),
+            MilitaryAsset("Jungle Fighter", "infantry", "specialized", 2, 125, 12, 5, 5, 1, 2, 1, 0.2, "Jungle warfare specialist", ["Basic Training"], ["jungle_warfare", "stealth"], "🌴"),
+            MilitaryAsset("Coastal Defender", "infantry", "specialized", 2, 135, 13, 5, 6, 1, 2, 1, 0.2, "Coastal defense specialist", ["Basic Training"], ["coastal_warfare", "amphibious"], "🏖️"),
+            MilitaryAsset("Swamp Trooper", "infantry", "specialized", 2, 120, 12, 4, 5, 1, 2, 1, 0.2, "Swamp warfare specialist", ["Basic Training"], ["swamp_warfare", "stealth"], "🐊"),
+            MilitaryAsset("Cave Fighter", "infantry", "specialized", 2, 145, 14, 6, 5, 1, 2, 1, 0.2, "Underground warfare specialist", ["Basic Training"], ["cave_warfare", "dark_vision"], "🕳️"),
+            MilitaryAsset("Volcano Trooper", "infantry", "specialized", 2, 155, 15, 6, 6, 1, 2, 1, 0.2, "Volcanic terrain specialist", ["Basic Training"], ["volcanic_warfare", "heat_resistance"], "🌋"),
+            MilitaryAsset("Tundra Warrior", "infantry", "specialized", 2, 140, 14, 5, 6, 1, 2, 1, 0.2, "Tundra warfare specialist", ["Basic Training"], ["tundra_warfare", "cold_resistance"], "❄️"),
+            
+            # Additional Future Infantry
+            MilitaryAsset("Quantum Assassin", "infantry", "future", 4, 1200, 120, 30, 20, 5, 4, 1, 1.2, "Quantum-powered assassin", ["Quantum Technology"], ["quantum_shift", "phase", "assassination"], "⚛️"),
+            MilitaryAsset("Bionic Berserker", "infantry", "future", 4, 1000, 100, 25, 18, 4, 3, 1, 1.0, "Cyborg berserker warrior", ["Bionics"], ["enhanced_senses", "regeneration", "berserker"], "🔬"),
+            MilitaryAsset("Plasma Destroyer", "infantry", "future", 4, 1100, 110, 28, 15, 4, 4, 1, 1.1, "Plasma weapon destroyer", ["Plasma Technology"], ["plasma_weapons", "devastation"], "⚡"),
+            MilitaryAsset("Gravity Master", "infantry", "future", 4, 1300, 130, 22, 20, 4, 3, 1, 1.3, "Gravity manipulation master", ["Gravity Control"], ["gravity_field", "levitation", "crush"], "🌌"),
+            MilitaryAsset("Time Lord", "infantry", "future", 4, 1500, 150, 35, 25, 6, 3, 1, 1.5, "Time manipulation lord", ["Temporal Technology"], ["time_slow", "precognition", "time_stop"], "⏰"),
+            MilitaryAsset("Reality Master", "infantry", "future", 4, 2000, 200, 40, 30, 5, 5, 1, 2.0, "Reality manipulation master", ["Reality Technology"], ["reality_bend", "dimension_shift", "reality_control"], "🌀"),
+            MilitaryAsset("Dimension Walker", "infantry", "future", 4, 1800, 180, 32, 28, 5, 4, 1, 1.8, "Dimensional travel specialist", ["Dimensional Technology"], ["dimension_shift", "phase", "teleport"], "🌌"),
+            MilitaryAsset("Universe Guardian", "infantry", "future", 4, 2500, 250, 50, 40, 8, 6, 1, 2.5, "Universe-level guardian", ["Universe Technology"], ["universe_control", "reality_bend", "omnipotence"], "🌌"),
+            MilitaryAsset("God Soldier", "infantry", "future", 4, 5000, 500, 100, 80, 10, 10, 1, 5.0, "God-like super soldier", ["Divine Technology"], ["omnipotence", "reality_control", "divine_power"], "👑"),
+            MilitaryAsset("Infinity Warrior", "infantry", "future", 4, 10000, 1000, 200, 150, 15, 15, 1, 10.0, "Infinite power warrior", ["Infinity Technology"], ["infinite_power", "omnipotence", "reality_control"], "♾️"),
+            
+            # Tier 5 - Transcendent Units
+            MilitaryAsset("Transcendent Soldier", "infantry", "transcendent", 5, 15000, 1500, 300, 200, 20, 20, 1, 15.0, "Transcendent reality warrior", ["Transcendent Technology"], ["transcendence", "reality_control"], "🌟"),
+            MilitaryAsset("Omnipotent Warrior", "infantry", "transcendent", 5, 25000, 2500, 500, 300, 25, 25, 1, 25.0, "Omnipotent combat entity", ["Omnipotence Technology"], ["omnipotence", "infinite_power"], "👑"),
+            MilitaryAsset("Eternal Guardian", "infantry", "transcendent", 5, 50000, 5000, 1000, 500, 30, 30, 1, 50.0, "Eternal guardian of reality", ["Eternal Technology"], ["eternal", "reality_guardian"], "♾️"),
+            
+            # Tier 6 - Divine Units
+            MilitaryAsset("Divine Warrior", "infantry", "divine", 6, 100000, 10000, 2000, 1000, 40, 40, 1, 100.0, "Divine combat entity", ["Divine Technology"], ["divine_power", "omnipotence"], "👑"),
+            MilitaryAsset("God of War", "infantry", "divine", 6, 200000, 20000, 3000, 1500, 50, 50, 1, 200.0, "God of warfare", ["Divine Technology"], ["god_power", "war_domain"], "⚔️"),
+            MilitaryAsset("Supreme Being", "infantry", "divine", 6, 500000, 50000, 5000, 2000, 60, 60, 1, 500.0, "Supreme being of power", ["Divine Technology"], ["supreme_power", "omnipotence"], "👑"),
+            
+            # Tier 7 - Cosmic Units
+            MilitaryAsset("Cosmic Guardian", "infantry", "cosmic", 7, 1000000, 100000, 10000, 5000, 80, 80, 1, 1000.0, "Cosmic reality guardian", ["Cosmic Technology"], ["cosmic_power", "reality_control"], "🌌"),
+            MilitaryAsset("Universe Master", "infantry", "cosmic", 7, 2000000, 200000, 15000, 7500, 100, 100, 1, 2000.0, "Master of the universe", ["Cosmic Technology"], ["universe_master", "omnipotence"], "🌌"),
+            MilitaryAsset("Multiverse Lord", "infantry", "cosmic", 7, 5000000, 500000, 25000, 10000, 120, 120, 1, 5000.0, "Lord of the multiverse", ["Cosmic Technology"], ["multiverse_lord", "reality_control"], "🌌"),
+            
+            # Tier 8 - Infinite Units
+            MilitaryAsset("Infinite Entity", "infantry", "infinite", 8, 10000000, 1000000, 50000, 20000, 150, 150, 1, 10000.0, "Infinite power entity", ["Infinite Technology"], ["infinite_power", "omnipotence"], "♾️"),
+            MilitaryAsset("Absolute Being", "infantry", "infinite", 8, 20000000, 2000000, 75000, 30000, 200, 200, 1, 20000.0, "Absolute power being", ["Infinite Technology"], ["absolute_power", "omnipotence"], "♾️"),
+            MilitaryAsset("Ultimate Warrior", "infantry", "infinite", 8, 50000000, 5000000, 100000, 50000, 250, 250, 1, 50000.0, "Ultimate warrior entity", ["Infinite Technology"], ["ultimate_power", "omnipotence"], "♾️"),
+            
+            # Tier 9 - Transcendental Units
+            MilitaryAsset("Transcendental Entity", "infantry", "transcendental", 9, 100000000, 10000000, 200000, 100000, 300, 300, 1, 100000.0, "Transcendental reality entity", ["Transcendental Technology"], ["transcendental", "reality_control"], "🌟"),
+            MilitaryAsset("Omniversal Lord", "infantry", "transcendental", 9, 200000000, 20000000, 300000, 150000, 400, 400, 1, 200000.0, "Lord of all universes", ["Transcendental Technology"], ["omniversal", "reality_control"], "🌟"),
+            MilitaryAsset("Eternal Master", "infantry", "transcendental", 9, 500000000, 50000000, 500000, 200000, 500, 500, 1, 500000.0, "Eternal master of reality", ["Transcendental Technology"], ["eternal_master", "omnipotence"], "🌟"),
+            
+            # Tier 10 - Ultimate Units
+            MilitaryAsset("Ultimate Entity", "infantry", "ultimate", 10, 1000000000, 100000000, 1000000, 500000, 1000, 1000, 1, 1000000.0, "Ultimate reality entity", ["Ultimate Technology"], ["ultimate_power", "omnipotence"], "👑"),
+            MilitaryAsset("Alpha Omega", "infantry", "ultimate", 10, 2000000000, 200000000, 1500000, 750000, 1500, 1500, 1, 2000000.0, "Alpha and Omega of reality", ["Ultimate Technology"], ["alpha_omega", "omnipotence"], "👑"),
+            MilitaryAsset("The One", "infantry", "ultimate", 10, 5000000000, 500000000, 2000000, 1000000, 2000, 2000, 1, 5000000.0, "The One true entity", ["Ultimate Technology"], ["the_one", "omnipotence"], "👑"),
         ]
         
         # ARMORED VEHICLES (50 units)
@@ -288,9 +378,106 @@ class MilitaryAssetsDatabase:
             MilitaryAsset("Dimensional Fortress", "defense", "super", 4, 10000, 1000, 100, 100, 0, 25, 100, 5.0, "Dimensional fortress", ["Dimensional Technology"], ["dimensional", "mega_fortress"], "🌌"),
         ]
         
+        # CYBER WARFARE UNITS (50 units)
+        cyber_units = [
+            # Basic Cyber
+            MilitaryAsset("Hacker", "cyber", "basic", 1, 100, 10, 2, 8, 1, 3, 1, 0.1, "Basic cyber warfare specialist", [], ["hacking"], "💻"),
+            MilitaryAsset("Data Miner", "cyber", "basic", 1, 80, 8, 1, 6, 1, 2, 1, 0.1, "Information gathering specialist", [], ["data_mining"], "🔍"),
+            MilitaryAsset("Code Breaker", "cyber", "basic", 1, 120, 12, 3, 10, 1, 2, 1, 0.1, "Encryption specialist", [], ["decryption"], "🔓"),
+            MilitaryAsset("Network Scanner", "cyber", "basic", 1, 90, 9, 2, 7, 1, 4, 1, 0.1, "Network reconnaissance specialist", [], ["network_scan"], "📡"),
+            MilitaryAsset("Virus Creator", "cyber", "basic", 1, 110, 11, 4, 5, 1, 2, 1, 0.1, "Malware development specialist", [], ["virus_creation"], "🦠"),
+            
+            # Advanced Cyber
+            MilitaryAsset("AI Hacker", "cyber", "advanced", 2, 300, 30, 8, 15, 2, 4, 1, 0.3, "AI-powered cyber warfare", ["Cyber Warfare"], ["ai_hacking", "machine_learning"], "🤖"),
+            MilitaryAsset("Quantum Cracker", "cyber", "advanced", 2, 400, 40, 10, 18, 2, 3, 1, 0.4, "Quantum encryption breaker", ["Quantum Technology"], ["quantum_decryption"], "⚛️"),
+            MilitaryAsset("Neural Infiltrator", "cyber", "advanced", 2, 350, 35, 6, 20, 2, 2, 1, 0.35, "Neural network infiltrator", ["Neural Technology"], ["neural_hacking"], "🧠"),
+            MilitaryAsset("Digital Ghost", "cyber", "advanced", 2, 320, 32, 5, 16, 2, 5, 1, 0.32, "Invisible cyber operative", ["Stealth Technology"], ["digital_stealth"], "👻"),
+            MilitaryAsset("System Overlord", "cyber", "advanced", 2, 450, 45, 12, 25, 2, 3, 1, 0.45, "System control specialist", ["System Control"], ["system_control"], "👑"),
+            
+            # Elite Cyber
+            MilitaryAsset("Cyber Warlord", "cyber", "elite", 3, 600, 60, 15, 30, 3, 4, 1, 0.6, "Elite cyber warfare commander", ["Advanced Cyber Warfare"], ["cyber_command", "network_domination"], "👑"),
+            MilitaryAsset("Digital Demigod", "cyber", "elite", 3, 800, 80, 20, 35, 3, 5, 1, 0.8, "Near-omnipotent cyber entity", ["Divine Cyber Technology"], ["divine_hacking", "reality_control"], "⚡"),
+            MilitaryAsset("Quantum Overmind", "cyber", "elite", 3, 1000, 100, 25, 40, 3, 6, 1, 1.0, "Quantum-enhanced AI consciousness", ["Quantum AI"], ["quantum_ai", "consciousness"], "⚛️"),
+            MilitaryAsset("Reality Hacker", "cyber", "elite", 3, 1200, 120, 30, 45, 3, 7, 1, 1.2, "Reality manipulation through code", ["Reality Technology"], ["reality_hack", "code_reality"], "🌀"),
+            MilitaryAsset("Infinity Coder", "cyber", "elite", 3, 1500, 150, 35, 50, 3, 8, 1, 1.5, "Infinite programming capability", ["Infinity Technology"], ["infinite_code", "omnipotence"], "♾️"),
+        ]
+        
+        # SPACE UNITS (50 units)
+        space_units = [
+            # Basic Space
+            MilitaryAsset("Space Fighter", "space", "basic", 2, 500, 50, 15, 10, 8, 6, 1, 0.5, "Basic space combat fighter", ["Space Technology"], ["space_combat"], "🚀"),
+            MilitaryAsset("Orbital Station", "space", "basic", 2, 1000, 100, 20, 30, 0, 8, 20, 0.8, "Orbital defense station", ["Space Technology"], ["orbital_defense"], "🛰️"),
+            MilitaryAsset("Lunar Rover", "space", "basic", 2, 300, 30, 8, 12, 3, 4, 2, 0.3, "Lunar surface vehicle", ["Space Technology"], ["lunar_operations"], "🌙"),
+            MilitaryAsset("Asteroid Miner", "space", "basic", 2, 400, 40, 5, 15, 2, 3, 5, 0.4, "Asteroid resource extraction", ["Space Technology"], ["mining", "resource_extraction"], "⛏️"),
+            MilitaryAsset("Space Probe", "space", "basic", 2, 200, 20, 3, 8, 6, 10, 1, 0.2, "Deep space reconnaissance", ["Space Technology"], ["recon", "exploration"], "🔍"),
+            
+            # Advanced Space
+            MilitaryAsset("Battle Cruiser", "space", "advanced", 3, 2000, 200, 40, 50, 4, 8, 10, 2.0, "Heavy space combat vessel", ["Advanced Space Technology"], ["space_combat", "heavy_weapons"], "🚀"),
+            MilitaryAsset("Stealth Satellite", "space", "advanced", 3, 800, 80, 25, 20, 5, 12, 1, 0.8, "Invisible orbital weapon", ["Stealth Technology"], ["stealth", "orbital_weapon"], "👻"),
+            MilitaryAsset("Plasma Destroyer", "space", "advanced", 3, 1500, 150, 35, 30, 3, 7, 8, 1.5, "Plasma weapon space ship", ["Plasma Technology"], ["plasma_weapons"], "⚡"),
+            MilitaryAsset("Quantum Explorer", "space", "advanced", 3, 1200, 120, 20, 25, 6, 15, 3, 1.2, "Quantum-enhanced exploration", ["Quantum Technology"], ["quantum_travel", "exploration"], "⚛️"),
+            MilitaryAsset("Gravity Ship", "space", "advanced", 3, 1800, 180, 30, 35, 4, 6, 6, 1.8, "Gravity manipulation vessel", ["Gravity Control"], ["gravity_field", "levitation"], "🌌"),
+            
+            # Elite Space
+            MilitaryAsset("Death Star", "space", "elite", 4, 5000, 500, 100, 100, 2, 20, 50, 5.0, "Planet-destroying super weapon", ["Super Weapon Technology"], ["planet_destroyer", "super_weapon"], "💀"),
+            MilitaryAsset("Dyson Sphere", "space", "elite", 4, 10000, 1000, 200, 200, 1, 50, 100, 10.0, "Stellar energy harvesting megastructure", ["Megastructure Technology"], ["stellar_energy", "megastructure"], "☀️"),
+            MilitaryAsset("Reality Ship", "space", "elite", 4, 8000, 800, 150, 150, 5, 25, 30, 8.0, "Reality manipulation vessel", ["Reality Technology"], ["reality_control", "dimension_shift"], "🌀"),
+            MilitaryAsset("Universe Explorer", "space", "elite", 4, 12000, 1200, 300, 300, 10, 100, 50, 12.0, "Universe-traversing vessel", ["Universe Technology"], ["universe_travel", "omnipotence"], "🌌"),
+            MilitaryAsset("Infinity Station", "space", "elite", 4, 20000, 2000, 500, 500, 15, 200, 100, 20.0, "Infinite power space station", ["Infinity Technology"], ["infinite_power", "omnipotence"], "♾️"),
+        ]
+        
+        # BIOLOGICAL UNITS (50 units)
+        biological_units = [
+            # Basic Biological
+            MilitaryAsset("Bio Soldier", "biological", "basic", 1, 80, 8, 4, 6, 1, 2, 1, 0.1, "Genetically enhanced soldier", [], ["genetic_enhancement"], "🧬"),
+            MilitaryAsset("Virus Warrior", "biological", "basic", 1, 60, 6, 3, 4, 1, 1, 1, 0.1, "Virus-infected combatant", [], ["viral_infection"], "🦠"),
+            MilitaryAsset("Plant Guardian", "biological", "basic", 1, 70, 7, 3, 8, 1, 2, 1, 0.1, "Plant-based defender", [], ["plant_control"], "🌱"),
+            MilitaryAsset("Animal Companion", "biological", "basic", 1, 50, 5, 2, 3, 2, 1, 1, 0.1, "Trained animal fighter", [], ["animal_control"], "🐺"),
+            MilitaryAsset("Fungal Spore", "biological", "basic", 1, 40, 4, 2, 2, 1, 1, 10, 0.05, "Spore-based biological weapon", [], ["spore_weapon"], "🍄"),
+            
+            # Advanced Biological
+            MilitaryAsset("Genetic Hybrid", "biological", "advanced", 2, 200, 20, 8, 12, 2, 3, 1, 0.2, "Multi-species genetic hybrid", ["Genetic Engineering"], ["hybrid_abilities"], "🧬"),
+            MilitaryAsset("Bio Mech", "biological", "advanced", 2, 300, 30, 12, 15, 2, 4, 1, 0.3, "Biological-mechanical hybrid", ["Bio Technology"], ["bio_mechanical"], "🤖"),
+            MilitaryAsset("Viral Overlord", "biological", "advanced", 2, 250, 25, 10, 10, 2, 2, 1, 0.25, "Virus control specialist", ["Viral Technology"], ["viral_control"], "🦠"),
+            MilitaryAsset("Plant Titan", "biological", "advanced", 2, 400, 40, 15, 20, 1, 3, 1, 0.4, "Giant plant creature", ["Plant Technology"], ["plant_growth", "massive"], "🌳"),
+            MilitaryAsset("Bio Swarm", "biological", "advanced", 2, 150, 15, 12, 5, 4, 2, 20, 0.15, "Swarm of biological creatures", ["Swarm Technology"], ["swarm", "adaptation"], "🦠"),
+            
+            # Elite Biological
+            MilitaryAsset("Bio God", "biological", "elite", 3, 1000, 100, 30, 40, 3, 5, 1, 1.0, "God-like biological entity", ["Divine Biology"], ["divine_biology", "omnipotence"], "👑"),
+            MilitaryAsset("Reality Virus", "biological", "elite", 3, 1500, 150, 40, 30, 3, 6, 1, 1.5, "Reality-infecting biological weapon", ["Reality Technology"], ["reality_infection"], "🌀"),
+            MilitaryAsset("Universe Organism", "biological", "elite", 3, 2000, 200, 50, 50, 4, 8, 1, 2.0, "Universe-scale biological entity", ["Universe Technology"], ["universe_scale", "omnipotence"], "🌌"),
+            MilitaryAsset("Infinity Life", "biological", "elite", 3, 3000, 300, 80, 80, 5, 10, 1, 3.0, "Infinite biological entity", ["Infinity Technology"], ["infinite_life", "omnipotence"], "♾️"),
+            MilitaryAsset("Divine Being", "biological", "elite", 3, 5000, 500, 100, 100, 6, 15, 1, 5.0, "Divine biological entity", ["Divine Technology"], ["divine_power", "omnipotence"], "👑"),
+        ]
+        
+        # MAGICAL UNITS (50 units)
+        magical_units = [
+            # Basic Magical
+            MilitaryAsset("Mage", "magical", "basic", 1, 100, 10, 6, 4, 1, 3, 1, 0.1, "Basic magic user", [], ["magic"], "🧙"),
+            MilitaryAsset("Wizard", "magical", "basic", 1, 120, 12, 8, 3, 1, 4, 1, 0.1, "Elemental magic specialist", [], ["elemental_magic"], "🧙‍♂️"),
+            MilitaryAsset("Witch", "magical", "basic", 1, 110, 11, 7, 5, 1, 3, 1, 0.1, "Dark magic practitioner", [], ["dark_magic"], "🧙‍♀️"),
+            MilitaryAsset("Druid", "magical", "basic", 1, 90, 9, 5, 6, 1, 2, 1, 0.1, "Nature magic specialist", [], ["nature_magic"], "🌿"),
+            MilitaryAsset("Cleric", "magical", "basic", 1, 80, 8, 4, 7, 1, 2, 1, 0.1, "Divine magic healer", [], ["divine_magic", "healing"], "⛪"),
+            
+            # Advanced Magical
+            MilitaryAsset("Archmage", "magical", "advanced", 2, 300, 30, 15, 10, 2, 6, 1, 0.3, "Master of all magic", ["Magic Mastery"], ["all_magic"], "🧙‍♂️"),
+            MilitaryAsset("Elemental Lord", "magical", "advanced", 2, 400, 40, 20, 15, 2, 5, 1, 0.4, "Elemental magic master", ["Elemental Mastery"], ["elemental_control"], "⚡"),
+            MilitaryAsset("Necromancer", "magical", "advanced", 2, 350, 35, 18, 12, 2, 4, 1, 0.35, "Death magic specialist", ["Necromancy"], ["death_magic", "undead"], "💀"),
+            MilitaryAsset("Dragon Mage", "magical", "advanced", 2, 500, 50, 25, 20, 3, 7, 1, 0.5, "Dragon magic specialist", ["Dragon Magic"], ["dragon_magic", "transformation"], "🐉"),
+            MilitaryAsset("Time Mage", "magical", "advanced", 2, 450, 45, 22, 18, 2, 5, 1, 0.45, "Time manipulation magic", ["Temporal Magic"], ["time_magic", "precognition"], "⏰"),
+            
+            # Elite Magical
+            MilitaryAsset("Magic God", "magical", "elite", 3, 1000, 100, 40, 30, 4, 8, 1, 1.0, "God-like magical entity", ["Divine Magic"], ["divine_magic", "omnipotence"], "👑"),
+            MilitaryAsset("Reality Mage", "magical", "elite", 3, 1500, 150, 50, 40, 4, 10, 1, 1.5, "Reality manipulation magic", ["Reality Magic"], ["reality_magic", "dimension_shift"], "🌀"),
+            MilitaryAsset("Universe Sorcerer", "magical", "elite", 3, 2000, 200, 60, 50, 5, 12, 1, 2.0, "Universe-scale magic", ["Universe Magic"], ["universe_magic", "omnipotence"], "🌌"),
+            MilitaryAsset("Infinity Wizard", "magical", "elite", 3, 3000, 300, 80, 70, 6, 15, 1, 3.0, "Infinite magical power", ["Infinity Magic"], ["infinite_magic", "omnipotence"], "♾️"),
+            MilitaryAsset("Divine Archmage", "magical", "elite", 3, 5000, 500, 100, 100, 8, 20, 1, 5.0, "Divine magical entity", ["Divine Technology"], ["divine_power", "omnipotence"], "👑"),
+        ]
+        
         # Add all assets to the database
         all_assets = (infantry_units + armored_vehicles + aircraft + warships + 
-                     missiles + defense_systems)
+                     missiles + defense_systems + cyber_units + space_units + 
+                     biological_units + magical_units)
         
         for asset in all_assets:
             assets[asset.name.lower().replace(" ", "_")] = asset

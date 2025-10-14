@@ -206,9 +206,13 @@ class UIManager:
         """Get assets menu keyboard"""
         builder = InlineKeyboardBuilder()
         
-        categories = ["infantry", "armor", "aircraft", "naval", "missile", "defense"]
+        categories = ["infantry", "armor", "aircraft", "naval", "missile", "defense", "cyber", "space", "biological", "magical"]
         for category in categories:
-            emoji = {"infantry": "👥", "armor": "🚗", "aircraft": "✈️", "naval": "🚢", "missile": "🚀", "defense": "🛡️"}.get(category, "⚔️")
+            emoji = {
+                "infantry": "👥", "armor": "🚗", "aircraft": "✈️", "naval": "🚢", 
+                "missile": "🚀", "defense": "🛡️", "cyber": "💻", "space": "🚀", 
+                "biological": "🧬", "magical": "🧙"
+            }.get(category, "⚔️")
             builder.add(InlineKeyboardButton(
                 text=f"{emoji} {category.title()}",
                 callback_data=f"game_assets_{category}"
@@ -219,11 +223,46 @@ class UIManager:
             callback_data="game_assets_search"
         ))
         builder.add(InlineKeyboardButton(
+            text="⭐ By Tier",
+            callback_data="game_assets_tier"
+        ))
+        builder.add(InlineKeyboardButton(
             text=f"{self.emoji_map['back']} Back",
             callback_data="game_military_menu"
         ))
         
-        builder.adjust(2, 2, 2, 1, 1)
+        builder.adjust(3, 3, 3, 1, 1, 1)
+        return builder.as_markup()
+    
+    def get_tier_menu_keyboard(self) -> InlineKeyboardMarkup:
+        """Get tier selection menu keyboard"""
+        builder = InlineKeyboardBuilder()
+        
+        tiers = [
+            (1, "⭐ Basic", "basic"),
+            (2, "⭐⭐ Advanced", "advanced"), 
+            (3, "⭐⭐⭐ Elite", "elite"),
+            (4, "⭐⭐⭐⭐ Future", "future"),
+            (5, "⭐⭐⭐⭐⭐ Transcendent", "transcendent"),
+            (6, "👑 Divine", "divine"),
+            (7, "🌌 Cosmic", "cosmic"),
+            (8, "♾️ Infinite", "infinite"),
+            (9, "🌟 Transcendental", "transcendental"),
+            (10, "👑 Ultimate", "ultimate")
+        ]
+        
+        for tier, name, subcategory in tiers:
+            builder.add(InlineKeyboardButton(
+                text=name,
+                callback_data=f"game_assets_tier_{tier}"
+            ))
+        
+        builder.add(InlineKeyboardButton(
+            text=f"{self.emoji_map['back']} Back",
+            callback_data="game_assets_menu"
+        ))
+        
+        builder.adjust(2, 2, 2, 2, 2, 1)
         return builder.as_markup()
     
     def get_province_menu_keyboard(self) -> InlineKeyboardMarkup:

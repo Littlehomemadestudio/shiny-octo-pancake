@@ -437,21 +437,37 @@ Use /trade to buy and sell resources!
             categories = assets_db.get_asset_categories()
             
             assets_text = "🎖️ **Military Assets Database**\n\n"
-            assets_text += f"📊 **Total Assets Available:** {assets_db.get_total_assets()}\n\n"
+            assets_text += f"📊 **Total Assets Available:** {assets_db.get_total_assets()}\n"
+            assets_text += f"🏷️ **Categories:** {len(categories)}\n"
+            assets_text += f"⭐ **Tiers:** 1-10\n\n"
             
-            for category in categories[:3]:  # Show first 3 categories
-                assets_text += f"**{category.title()}:**\n"
-                category_assets = assets_db.get_assets_by_category(category)[:5]  # Show first 5
-                
-                for asset in category_assets:
-                    emoji = asset.emoji
-                    cost = asset.cost
-                    tier = "⭐" * asset.tier
-                    assets_text += f"{emoji} **{asset.name}** {tier} - {cost} gold\n"
-                
-                assets_text += "\n"
+            # Show tier distribution
+            tier_counts = {}
+            for asset in assets_db.assets.values():
+                tier = asset.tier
+                tier_counts[tier] = tier_counts.get(tier, 0) + 1
             
-            assets_text += "Use /build to construct units!"
+            assets_text += "**Tier Distribution:**\n"
+            for tier in sorted(tier_counts.keys()):
+                count = tier_counts[tier]
+                stars = "⭐" * min(tier, 5)
+                if tier > 5:
+                    stars = ["👑", "🌌", "♾️", "🌟", "👑"][tier - 6]
+                assets_text += f"{stars} Tier {tier}: {count} units\n"
+            
+            assets_text += "\n**Categories Available:**\n"
+            category_emojis = {
+                "infantry": "👥", "armor": "🚗", "aircraft": "✈️", "naval": "🚢", 
+                "missile": "🚀", "defense": "🛡️", "cyber": "💻", "space": "🚀", 
+                "biological": "🧬", "magical": "🧙"
+            }
+            
+            for category in categories:
+                emoji = category_emojis.get(category, "⚔️")
+                count = len(assets_db.get_assets_by_category(category))
+                assets_text += f"{emoji} {category.title()}: {count} units\n"
+            
+            assets_text += "\nUse the buttons below to explore!"
             
             keyboard = self.ui.get_assets_menu_keyboard()
             await message.answer(assets_text, reply_markup=keyboard, parse_mode="Markdown")
@@ -599,8 +615,88 @@ Use /trade to buy and sell resources!
             await self.military_command(callback_query.message)
         elif data == "game_military_assets":
             await self.assets_command(callback_query.message)
+        elif data.startswith("game_assets_"):
+            await self.handle_assets_callback(callback_query)
         
         await callback_query.answer()
+    
+    async def handle_assets_callback(self, callback_query: CallbackQuery):
+        """Handle assets menu callbacks"""
+        data = callback_query.data
+        
+        if data == "game_assets_tier":
+            keyboard = self.ui.get_tier_menu_keyboard()
+            await callback_query.message.answer("⭐ **Select Tier**\n\nChoose a tier to view units:", reply_markup=keyboard, parse_mode="Markdown")
+        elif data.startswith("game_assets_tier_"):
+            tier = int(data.split("_")[3])
+            await self.show_assets_by_tier(callback_query, tier)
+        elif data.startswith("game_assets_"):
+            category = data.split("_")[2]
+            await self.show_assets_by_category(callback_query, category)
+        elif data == "game_assets_search":
+            await callback_query.message.answer("🔍 **Asset Search**\n\nSearch functionality coming soon! Use the category buttons for now.", parse_mode="Markdown")
+    
+    async def show_assets_by_category(self, callback_query: CallbackQuery, category: str):
+        """Show assets by category"""
+        assets_db = self.military.assets_db
+        assets = assets_db.get_assets_by_category(category)
+        
+        if not assets:
+            await callback_query.message.answer(f"❌ No {category} units found.")
+            return
+        
+        category_emojis = {
+            "infantry": "👥", "armor": "🚗", "aircraft": "✈️", "naval": "🚢", 
+            "missile": "🚀", "defense": "🛡️", "cyber": "💻", "space": "🚀", 
+            "biological": "🧬", "magical": "🧙"
+        }
+        
+        emoji = category_emojis.get(category, "⚔️")
+        text = f"{emoji} **{category.title()} Units**\n\n"
+        
+        # Show first 10 assets
+        for asset in assets[:10]:
+            tier_stars = "⭐" * min(asset.tier, 5)
+            if asset.tier > 5:
+                tier_stars = ["👑", "🌌", "♾️", "🌟", "👑"][asset.tier - 6]
+            
+            text += f"{asset.emoji} **{asset.name}** {tier_stars}\n"
+            text += f"   Cost: {asset.cost} gold | Attack: {asset.attack} | Defense: {asset.defense}\n\n"
+        
+        if len(assets) > 10:
+            text += f"... and {len(assets) - 10} more units"
+        
+        keyboard = self.ui.get_assets_menu_keyboard()
+        await callback_query.message.answer(text, reply_markup=keyboard, parse_mode="Markdown")
+    
+    async def show_assets_by_tier(self, callback_query: CallbackQuery, tier: int):
+        """Show assets by tier"""
+        assets_db = self.military.assets_db
+        assets = assets_db.get_assets_by_tier(tier)
+        
+        if not assets:
+            await callback_query.message.answer(f"❌ No Tier {tier} units found.")
+            return
+        
+        tier_names = {
+            1: "⭐ Basic", 2: "⭐⭐ Advanced", 3: "⭐⭐⭐ Elite", 4: "⭐⭐⭐⭐ Future",
+            5: "⭐⭐⭐⭐⭐ Transcendent", 6: "👑 Divine", 7: "🌌 Cosmic", 8: "♾️ Infinite",
+            9: "🌟 Transcendental", 10: "👑 Ultimate"
+        }
+        
+        tier_name = tier_names.get(tier, f"Tier {tier}")
+        text = f"{tier_name} **Units**\n\n"
+        
+        # Show first 10 assets
+        for asset in assets[:10]:
+            text += f"{asset.emoji} **{asset.name}** ({asset.category})\n"
+            text += f"   Cost: {asset.cost} gold | Attack: {asset.attack} | Defense: {asset.defense}\n\n"
+        
+        if len(assets) > 10:
+            text += f"... and {len(assets) - 10} more units"
+        
+        keyboard = self.ui.get_tier_menu_keyboard()
+        await callback_query.message.answer(text, reply_markup=keyboard, parse_mode="Markdown")
     
     async def handle_trade_callback(self, callback_query: CallbackQuery):
         """Handle trade menu callbacks"""
