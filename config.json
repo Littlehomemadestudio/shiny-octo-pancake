@@ -1,50 +1,31 @@
 {
   "bot": {
     "token": "YOUR_BOT_TOKEN_HERE",
-    "admin_ids": [123456789],
     "debug": false
-  },
-  "database": {
-    "url": "postgresql://user:password@localhost/worldwar_bot",
-    "echo": false
   },
   "game": {
     "world_name": "Terra Nova",
-    "max_players_per_group": 50,
-    "game_speed": 1.0,
     "daily_income_base": 1000,
-    "tax_rate": 0.1,
-    "inflation_rate": 0.02,
     "battle_cooldown": 300,
-    "trade_cooldown": 60,
-    "research_speed": 1.0,
-    "morale_decay": 0.01,
-    "weather_change_interval": 3600
+    "trade_cooldown": 60
   },
   "economy": {
     "materials": {
-      "iron": {"base_price": 10, "volatility": 0.1},
-      "oil": {"base_price": 15, "volatility": 0.15},
-      "food": {"base_price": 5, "volatility": 0.05},
-      "gold": {"base_price": 50, "volatility": 0.2},
-      "uranium": {"base_price": 100, "volatility": 0.3},
-      "steel": {"base_price": 25, "volatility": 0.12}
-    },
-    "price_update_interval": 1800
+      "iron": {"base_price": 10},
+      "oil": {"base_price": 15},
+      "food": {"base_price": 5},
+      "gold": {"base_price": 50},
+      "uranium": {"base_price": 100},
+      "steel": {"base_price": 25}
+    }
   },
   "military": {
     "unit_types": {
-      "infantry": {"cost": 100, "upkeep": 10, "attack": 5, "defense": 3, "speed": 1},
-      "tank": {"cost": 500, "upkeep": 50, "attack": 15, "defense": 10, "speed": 2},
-      "artillery": {"cost": 300, "upkeep": 30, "attack": 20, "defense": 2, "speed": 1},
-      "aircraft": {"cost": 800, "upkeep": 80, "attack": 25, "defense": 5, "speed": 5},
-      "ship": {"cost": 1000, "upkeep": 100, "attack": 30, "defense": 15, "speed": 3}
+      "infantry": {"cost": 100, "upkeep": 10, "attack": 5, "defense": 3},
+      "tank": {"cost": 500, "upkeep": 50, "attack": 15, "defense": 10},
+      "artillery": {"cost": 300, "upkeep": 30, "attack": 20, "defense": 2},
+      "aircraft": {"cost": 800, "upkeep": 80, "attack": 25, "defense": 5},
+      "ship": {"cost": 1000, "upkeep": 100, "attack": 30, "defense": 15}
     }
-  },
-  "world": {
-    "provinces": 50,
-    "ai_factions": 3,
-    "world_events_interval": 7200,
-    "season_duration": 2592000
   }
 }
